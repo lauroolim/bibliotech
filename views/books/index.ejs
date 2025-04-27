@@ -1,0 +1,10 @@
+<h1>Lista de Livros</h1>
+<% if (books.length > 0) { %>
+    <ul>
+        <% books.forEach(function(book) { %>
+            <li><%= book.title %> - <%= book.author %></li>
+        <% }); %>
+    </ul>
+<% } else { %>  
+    <p>Nenhum livro encontrado.</p>
+<% } %>
