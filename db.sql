@@ -24,7 +24,6 @@ CREATE TYPE loan_status AS ENUM ('ativo', 'encerrado');
 
 CREATE TABLE IF NOT EXISTS loans (
   id SERIAL PRIMARY KEY,
-  price FLOAT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deadline TIMESTAMP NOT NULL,
   return_date TIMESTAMP NOT NULL,

@@ -3,6 +3,7 @@
 Sistema de gerenciamento de biblioteca digital que permite catalogar, pesquisar e administrar acervos de livros e outros materiais bibliográficos.
 
 ## Tecnologias Utilizadas
+
 - **Backend**: Node.js (Express)
 - **Frontend**: EJS (Embedded JavaScript templates)
 - **Banco de Dados**: PostgreSQL 15
@@ -12,6 +13,7 @@ Sistema de gerenciamento de biblioteca digital que permite catalogar, pesquisar 
 ## Configuração do Ambiente
 
 ### Pré-requisitos
+
 - Docker e Docker Compose instalados
 - Node.js (para desenvolvimento local)
 
@@ -24,13 +26,19 @@ git clone [URL_DO_REPOSITORIO]
 cd bibliotech
 ```
 
-2. Inicie os containers:
+2. Instale as dependências:
+
+```bash
+npm install
+```
+
+3. Inicie os containers:
 
 ```bash
 docker-compose up -d
 ```
 
-3. Inicialize o banco de dados:
+4. Inicialize o banco de dados:
 
 ```bash
 # Acessar o bash do container PostgreSQL
@@ -55,3 +63,12 @@ CREATE TABLE IF NOT EXISTS users (
 # \l - Listar todos os bancos de dados
 # SELECT * FROM nome_tabela; - Visualizar registros de uma tabela
 ```
+
+5. Inicie o sistema:
+
+```bash
+npm start
+```
+
+6. Acesse em <http://localhost:3000>
+
