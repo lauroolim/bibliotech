@@ -26,7 +26,7 @@ declare module "express-session" {
   }
 }
 
-app.use("/books", booksRoutes);
+app.use("/livros", booksRoutes);
 
 app.get("/", (req, res) => {
   res.render("home", { user: req.session.user });
