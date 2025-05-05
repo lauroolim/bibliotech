@@ -1,5 +1,5 @@
 import { Book } from "../model/book";
-import { Response, Request } from "express";
+import express, { Request, Response } from "express";
 import { pool } from "../../db";
 
 export class BookController {
@@ -64,12 +64,17 @@ export class BookController {
 
   async insertBooks(req: Request, res: Response) {
     try {
+      if(!req.body){
+        return res.status(400).render("error", {
+          message: "Nenhum dado foi recebido",
+        });
+      }
       const { title, author } = req.body;
 
       const insert = await this.book.create(title, author);
-      res.redirect("/livros");
+      res.redirect("/books");
     } catch (err) {
-      console.error("falha ao inserir livro" + err);
+      console.error("falha ao inserir livro " + err);
       res.sendStatus(500).render("error", {
         message:
           "Erro interno do servidor ao inserir livros, tente mais tarde...",

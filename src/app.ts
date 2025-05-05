@@ -15,6 +15,8 @@ app.use(
     saveUninitialized: true,
   }),
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 declare module "express-session" {
   interface SessionData {
