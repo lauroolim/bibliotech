@@ -1,5 +1,5 @@
 import { Book } from "../model/book";
-import express, { Request, Response } from "express";
+import { Request, Response } from "express";
 import { pool } from "../../db";
 
 export class BookController {
@@ -9,7 +9,7 @@ export class BookController {
     this.book = new Book(pool);
   }
 
-  async displayBooks(req: Request, res: Response) {
+  async displayBooks(res: Response) {
     try {
       const books = await this.book.getAll();
       res.render("books/index", { books });
@@ -22,7 +22,7 @@ export class BookController {
     }
   }
 
-  async displayFormAddBook(req: Request, res: Response) {
+  async displayFormAddBook(res: Response) {
     try {
       res.render("books/add");
     } catch (err) {
@@ -64,7 +64,7 @@ export class BookController {
 
   async insertBooks(req: Request, res: Response) {
     try {
-      if(!req.body){
+      if (!req.body) {
         return res.status(400).render("error", {
           message: "Nenhum dado foi recebido",
         });
