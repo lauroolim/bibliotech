@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: bibliotech_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: bibliotech
+    ports:
+      - "5432:5432"
+    volumes:
+      - bibliotech_data:/var/lib/postgresql/data
+  #app:
+  #  container_name: app-dev
+  #  build: .
+  #  ports:
+  #    - "3000:3000"
+  #  env_file:
+  #    - .env
+  #  depends_on:
+  #    - db
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:9.2
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    depends_on:
+      - db
+volumes:
+  bibliotech_data:

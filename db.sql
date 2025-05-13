@@ -1,0 +1,48 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS employees (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  cpf VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS books (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TYPE loan_status AS ENUM ('ativo', 'encerrado');
+
+CREATE TABLE IF NOT EXISTS loans (
+  id SERIAL PRIMARY KEY,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deadline TIMESTAMP NOT NULL,
+  return_date TIMESTAMP NOT NULL,
+  book_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  employee_id INTEGER NOT NULL,
+  status loan_status NOT NULL DEFAULT 'ativo',
+  FOREIGN KEY (employee_id) REFERENCES employees(id),
+  FOREIGN KEY (book_id) REFERENCES books(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TYPE fine_status AS ENUM ('pendente', 'pago');
+
+CREATE TABLE IF NOT EXISTS fines (
+  id SERIAL PRIMARY KEY,
+  loan_id INTEGER NOT NULL,
+  value FLOAT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status fine_status NOT NULL DEFAULT 'pendente',
+  FOREIGN KEY (loan_id) REFERENCES loans(id)
+);
