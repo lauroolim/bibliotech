@@ -75,11 +75,11 @@ CREATE TABLE IF NOT EXISTS users (
 # SELECT * FROM nome_tabela; - Visualizar registros de uma tabela
 ```
 
-5. Execute a aplicação:
+7. Execute a aplicação:
 
 ```bash
 python app.py
 ```
 
-6. Acesse em <http://localhost:5000>
+8. Acesse em <http://localhost:5000>
 
