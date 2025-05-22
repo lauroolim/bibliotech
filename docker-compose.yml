@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: bibliotech_db
     environment:
       POSTGRES_USER: admin
@@ -10,17 +10,24 @@ services:
       - "5432:5432"
     volumes:
       - bibliotech_data:/var/lib/postgresql/data
-  #app:
-  #  container_name: app-dev
-  #  build: .
-  #  ports:
-  #    - "3000:3000"
-  #  env_file:
-  #    - .env
-  #  depends_on:
-  #    - db
+  app:
+    container_name: app
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+  proxy:
+    build: proxy
+    restart: always
+    ports:
+      - 8000:80
+    depends_on:
+      - app
   pgadmin:
-    container_name: pgadmin
+    container_name: bibliotech_pgadmin
     image: dpage/pgadmin4:9.2
     ports:
       - "8080:80"

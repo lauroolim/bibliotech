@@ -26,14 +26,6 @@ git clone [URL_DO_REPOSITORIO]
 cd bibliotech
 ```
 
-2. Crie e ative um ambiente virtual (opcional, mas recomendado):
-
-```bash
-python3 -m venv venv
-source venv/bin/activate       # Linux/macOS
-venv\Scripts\activate          # Windows
-```
-
 3. Instale as dependências:
 
 ```bash
@@ -46,33 +38,25 @@ pip install -r requirements.txt
 5. Inicie os containers:
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 6. Inicialize o banco de dados:
 
 ```bash
-# Acessar o bash do container PostgreSQL
-docker exec -it bibliotech_db_1 bash
+# acessar o bash do container do app
+$ docker exec -it app sh
 
-# Acessar o banco de dados com psql
-psql -U admin -d bibliotech
-
-# Copie e Cole o db.sql no terminal via psql
-# db.sql:
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+# rode as migrations
+$ python migrations.py
 ...
 
-# OBS.: Alguns comandos uteis do psql:
-# \dt - Listar todas as tabelas
-# \l - Listar todos os bancos de dados
-# SELECT * FROM nome_tabela; - Visualizar registros de uma tabela
+# comandos úteis para verificar o estado do banco de dados
+# docker exec -it bibliotech bash -> para acessar o bash do container do banco de dados
+# psql -U admin -d bibliotech -> para acessar o banco de dados
+# \l -> para listar as tabelas
+# \dt -> para listar os bancos de dados
+
 ```
 
 7. Execute a aplicação:
