@@ -1,16 +1,19 @@
 import pyodbc
 import os
+from flask import current_app
 
 class Database:  
     _instance = None
 
-    def __init__(self, app=None):
-        if app is not None:
-            self.init_app(app)
-            
+    @classmethod
+    def init_app(cls, app):
+        app.db = cls
+        with app.app_context():
+            cls.test_conn()
+
     @classmethod
     def get_connection(cls):
-        return pyodbc.connect(os.getenv('DB_ODBC_STRING'))
+        return pyodbc.connect(current_app.config['DB_ODBC_STRING'])
 
     @classmethod
     def execute_query(cls, query, params=None, commit=True):
@@ -21,7 +24,6 @@ class Database:
                 cursor.execute(query, params)
             else:
                 cursor.execute(query)
-                
             if commit:
                 conn.commit()
                 
@@ -35,7 +37,7 @@ class Database:
             conn.close()
 
     @classmethod
-    def init_app(cls, app):
+    def test_conn(cls):
         try:
             conn = cls.get_connection()
             conn.close()
