@@ -6,7 +6,7 @@ class Database:
     _instance = None
 
     @classmethod
-    def init_app(cls, app):
+    def init_app(cls, app): 
         app.db = cls
         with app.app_context():
             cls.test_conn()
