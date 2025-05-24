@@ -1,6 +1,9 @@
 import pyodbc
 import os
 from flask import current_app
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Database:  
     _instance = None
@@ -14,27 +17,45 @@ class Database:
     @classmethod
     def get_connection(cls):
         return pyodbc.connect(current_app.config['DB_ODBC_STRING'])
-
+ 
     @classmethod
     def execute_query(cls, query, params=None, commit=True):
         conn = cls.get_connection()
+        conn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
+        conn.setdecoding(pyodbc.SQL_CHAR, encoding='utf-8')
+        conn.setencoding(encoding='utf-8')
+        
+        is_select = query.strip().upper().startswith("SELECT")
+
         cursor = conn.cursor()
         try:
+            logger.debug(f"executando query: {query} e params: {params}")
+            
             if params:
-                cursor.execute(query, params)
+                if is_select:
+                    cursor.execute(query, *params)
+                else:
+                    cursor.execute(query, params)
             else:
                 cursor.execute(query)
-            if commit:
-                conn.commit()
-                
-            return cursor
+
+            if is_select:
+                return cursor
+            else:
+                if commit:
+                    conn.commit()
+                return cursor
         except Exception as e:
+            logger.error(f"erro ao executar query: {e}")
+            logger.error(f"query: {query}")
+            logger.error(f"params: {params}")
             if commit:
                 conn.rollback()
-            raise e
+            raise
         finally:
-            cursor.close()
-            conn.close()
+            if not is_select:
+                cursor.close()
+                conn.close()
 
     @classmethod
     def test_conn(cls):
