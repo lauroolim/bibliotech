@@ -1,7 +1,31 @@
 {% extends 'base.html' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Buscar Livro{% endblock %}
 
 {% block content %}
-<h1>home</h1>
+<div class="d-flex justify-content-center align-items-center mt-5">
+    <form action="" method="get"
+                class="w-75 p-4 border rounded shadow"
+                style="max-width:600px;">
+        <div class="text-center mb-4">
+            <h1 class="h3">Buscar Livro</h1>
+        </div>
+        <div class="mb-3">
+            <input type="text"
+                         name="isbn"
+                         class="form-control form-control-lg"
+                         placeholder="Digite o ISBN do livro"
+                         required>
+        </div>
+        <div class="d-flex justify-content-between">
+            <a href="" class="btn btn-outline-primary btn-lg">Pesquisa Personalizada</a>
+            <button type="submit"
+                            name="action"
+                            value="simple"
+                            class="btn btn-primary btn-lg">
+                Buscar
+            </button>
+        </div>
+    </form>
+</div>
 {% endblock %}
