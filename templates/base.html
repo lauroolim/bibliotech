@@ -16,12 +16,30 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link">Eai, {{ current_user.username }}!</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
-                    </li>
+                        {% if current_user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.list_user') }}">Usuários</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="">Livros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="">Emprestimos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <span class="nav-link">Eai, {{ current_user.username }}!</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
+                        </li>
+                        {% endif %}
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login_user') }}">Login</a>

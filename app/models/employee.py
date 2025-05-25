@@ -16,3 +16,7 @@ class Employee(UserMixin):
     @property
     def is_active(self):
         return self._is_active
+        
+    @property
+    def is_admin(self):
+        return True

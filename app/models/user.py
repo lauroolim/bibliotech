@@ -11,3 +11,7 @@ class User(UserMixin):
 
     def get_id(self):
         return f"u_{self.id}"
+        
+    @property
+    def is_admin(self):
+        return False

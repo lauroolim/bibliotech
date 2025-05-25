@@ -42,26 +42,11 @@ class AuthController:
             if admin:
                 login_user(admin)
                 flash('Administrador logado com sucesso!', 'success')
-                return redirect(url_for('index'))
+                return redirect(url_for('admin.dashboard'))
                 
             flash('CPF ou senha inválidos', 'danger')
                 
         return render_template('auth/login_admin.html')
-
-    def register_user(self):
-        if request.method == 'POST':
-            username = request.form['username']
-            email = request.form['email']
-            password = request.form['password']
-
-            try:
-                self.auth_service.register_user(username, password, email)
-                flash('Usuário cadastrado com sucesso', 'success') 
-                return redirect(url_for('admin.user_list'))  
-            except ValueError as e:
-                flash(str(e), 'danger')
-
-        return render_template('admin/register_user.html')  
 
     def logout(self):
         logout_user()  

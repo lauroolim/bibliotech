@@ -14,12 +14,6 @@ def create_auth_blueprint(auth_controller):
     def login_admin():
         return auth_controller.login_admin()
 
-    @auth_bp.route('/admin/register-user', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def register_user():
-        return auth_controller.register_user()
-
     @auth_bp.route('/logout', methods=['GET'])
     @login_required
     def logout():

@@ -6,6 +6,7 @@ from app.repositories.user_repository import PSQLUserRepository
 from app.repositories.employee_repository import PSQLEmployeeRepository
 from app.controllers.auth_controller import AuthController
 import logging
+from app.controllers.user_controller import UserController
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login_user'  
@@ -28,7 +29,9 @@ def create_app(config_name='development'):
 
     user_repository = PSQLUserRepository(Database)
     employee_repository = PSQLEmployeeRepository(Database)
+
     auth_controller = AuthController(user_repository, employee_repository)
+    user_controller = UserController(user_repository)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -43,6 +46,9 @@ def create_app(config_name='development'):
 
     from app.routes.auth_routes import create_auth_blueprint
     app.register_blueprint(create_auth_blueprint(auth_controller))
+
+    from app.routes.admin_routes import create_admin_blueprint
+    app.register_blueprint(create_admin_blueprint(user_controller))
 
     @app.route('/')
     def index():
