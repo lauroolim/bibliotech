@@ -18,7 +18,7 @@ class PSQLEmployeeRepository(IEmployeeRepository):
         self.db = db
 
     def fetch_employee_by_cpf(self, cpf):
-        query = "SELECT id, username, cpf, created_at, is_active, email, password FROM employees WHERE cpf = ?"
+        query = "SELECT id, username, cpf, created_at, hired_at, password, is_active, email FROM employees WHERE cpf = ?"
         params = [cpf]
 
         try:
@@ -31,9 +31,10 @@ class PSQLEmployeeRepository(IEmployeeRepository):
                     username=employee[1], 
                     cpf=employee[2], 
                     created_at=employee[3],
-                    is_active=employee[4],
-                    email=employee[5],
-                    password=employee[6]
+                    hired_at=employee[4],
+                    password=employee[5],  
+                    is_active=employee[6], 
+                    email=employee[7]      
                 )
             return None
         except Exception as e:
@@ -41,7 +42,7 @@ class PSQLEmployeeRepository(IEmployeeRepository):
             return None
 
     def fetch_employee_by_id(self, employee_id):
-        query = "SELECT id, username, cpf, created_at, is_active, email, password FROM employees WHERE id = ?"
+        query = "SELECT id, username, cpf, created_at, hired_at, password, is_active, email FROM employees WHERE id = ?"
         params = [int(employee_id)]  
 
         try:
@@ -54,9 +55,10 @@ class PSQLEmployeeRepository(IEmployeeRepository):
                     username=employee[1], 
                     cpf=employee[2], 
                     created_at=employee[3],
-                    is_active=employee[4],
-                    email=employee[5],
-                    password=employee[6]
+                    hired_at=employee[4],
+                    password=employee[5],  
+                    is_active=employee[6], 
+                    email=employee[7]      
                 )
             return None
         except Exception as e:

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15
-    container_name: bibliotech_db
+    container_name: bibliotech_pg
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: root
@@ -10,8 +10,10 @@ services:
       - "5432:5432"
     volumes:
       - bibliotech_data:/var/lib/postgresql/data
+    networks:
+      - bibliotech_network
   app:
-    container_name: app
+    container_name: bibliotech_app
     build: .
     volumes:
       - .:/app
@@ -19,13 +21,17 @@ services:
       - .env
     depends_on:
       - db
+    networks:
+      - bibliotech_network
   proxy:
     build: proxy
     restart: always
     ports:
-      - 8000:80
+      - "8000:80"
     depends_on:
       - app
+    networks:
+      - bibliotech_network
   pgadmin:
     container_name: bibliotech_pgadmin
     image: dpage/pgadmin4:9.2
@@ -36,5 +42,11 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     depends_on:
       - db
+    networks:
+      - bibliotech_network
+networks:
+  bibliotech_network:
+    driver: bridge
+
 volumes:
   bibliotech_data:

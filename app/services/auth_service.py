@@ -9,7 +9,7 @@ class AuthService:
         self.user_repository = user_repository
         self.employee_repository = employee_repository
 
-    def login_users(self, email, password):
+    def login_user(self, email, password):
         user = self.user_repository.fetch_user_by_email(email)
         if not user or not self._verify_password(password, user.password): 
             return None

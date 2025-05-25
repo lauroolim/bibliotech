@@ -16,7 +16,11 @@ class Database:
 
     @classmethod
     def get_connection(cls):
-        return pyodbc.connect(current_app.config['DB_ODBC_STRING'])
+        conn = pyodbc.connect(current_app.config['DB_ODBC_STRING'])
+        cursor = conn.cursor()
+        cursor.execute("SET search_path TO bibliotech, public")
+        cursor.close()
+        return conn
  
     @classmethod
     def execute_query(cls, query, params=None, commit=True):

@@ -1,6 +1,0 @@
--- 
--- depends: 20250525_03_BBWHd
-
-ALTER TABLE employees
-    ADD COLUMN email VARCHAR(20) NOT NULL,
-    ADD COLUMN senha VARCHAR(20) NOT NULL;
