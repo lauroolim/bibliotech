@@ -1,63 +1,64 @@
 from abc import ABC, abstractmethod
-from app.models.user import User
+from app.models.employee import Employee
 import logging
 
 logger = logging.getLogger(__name__)
 
 class IEmployeeRepository(ABC):
     @abstractmethod
-    def insert_user(self, username: str, password: str, email: str) -> bool:
-        pass
-
-    @abstractmethod
-    def fetch_user_by_email(self, email: str) -> User:
+    def fetch_employee_by_cpf(self, cpf: str) -> Employee:
         pass
     
     @abstractmethod
-    def fetch_user_by_id(self, user_id: int) -> User:
+    def fetch_employee_by_id(self, employee_id: int) -> Employee:
         pass
 
-class PSQLUserRepository(IUserRepository):
+class PSQLEmployeeRepository(IEmployeeRepository):
     def __init__(self, db):
         self.db = db
 
-    def insert_user(self, username, password, email):
-        query = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)"
-        params = [username, password, email]  
-
-        try:
-            self.db.execute_query(query, params)
-            return True
-        except Exception as e:
-            print(f"Erro ao inserir usuário: {str(e)}")
-            return False
-
-    def fetch_user_by_email(self, email):
-        query = "SELECT id, username, email, password, created_at FROM users WHERE email = ?"
-        params = [email]
+    def fetch_employee_by_cpf(self, cpf):
+        query = "SELECT id, username, cpf, created_at, is_active, email, password FROM employees WHERE cpf = ?"
+        params = [cpf]
 
         try:
             cursor = self.db.execute_query(query, params)
-            user = cursor.fetchone()
+            employee = cursor.fetchone()
 
-            if user:
-                return User(id=user[0], username=user[1], email=user[2], password=user[3], created_at=user[4])
+            if employee:
+                return Employee(
+                    id=employee[0],
+                    username=employee[1], 
+                    cpf=employee[2], 
+                    created_at=employee[3],
+                    is_active=employee[4],
+                    email=employee[5],
+                    password=employee[6]
+                )
             return None
         except Exception as e:
-            logger.error(f"falha ao buscar usuario no banco: {str(e)}")
+            logger.error(f"Falha ao buscar funcionário por CPF: {str(e)}")
             return None
 
-    def fetch_user_by_id(self, user_id):
-        query = "SELECT id, username, email, password, created_at FROM users WHERE id = ?"
-        params = [int(user_id)]  
+    def fetch_employee_by_id(self, employee_id):
+        query = "SELECT id, username, cpf, created_at, is_active, email, password FROM employees WHERE id = ?"
+        params = [int(employee_id)]  
 
         try:
             cursor = self.db.execute_query(query, params)
-            user = cursor.fetchone()
+            employee = cursor.fetchone()
 
-            if user:
-                return User(id=user[0], username=user[1], email=user[2], password=user[3], created_at=user[4])
+            if employee:
+                return Employee(
+                    id=employee[0],
+                    username=employee[1], 
+                    cpf=employee[2], 
+                    created_at=employee[3],
+                    is_active=employee[4],
+                    email=employee[5],
+                    password=employee[6]
+                )
             return None
         except Exception as e:
-            logger.error(f"falha ao buscar usuario no banco: {str(e)}")
+            logger.error(f"Falha ao buscar funcionário por ID: {str(e)}")
             return None

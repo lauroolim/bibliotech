@@ -10,4 +10,4 @@ class User(UserMixin):
         self.created_at = created_at
 
     def get_id(self):
-        return str(self.id)
+        return f"u_{self.id}"

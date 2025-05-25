@@ -1,14 +1,16 @@
 from app.services.auth_service import AuthService
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
-from app.repositories.user_repository import IUserRepository 
+from app.repositories.user_repository import IUserRepository
+from app.repositories.employee_repository import IEmployeeRepository
 
 class AuthController:
-    def __init__(self, user_repository: IUserRepository):
+    def __init__(self, user_repository: IUserRepository, employee_repository: IEmployeeRepository):
         self.user_repository = user_repository
-        self.auth_service = AuthService(user_repository)
+        self.employee_repository = employee_repository
+        self.auth_service = AuthService(user_repository, employee_repository)
 
-    def login(self):
+    def login_user(self):
         if current_user.is_authenticated:
             return redirect(url_for('index'))
 
@@ -22,22 +24,31 @@ class AuthController:
                 login_user(user)
                 flash('Logado com sucesso!', 'success')
                 return redirect(url_for('index'))
-            
-            employee = self.user_repository.fetch_employee_by_email(email)
-
-            if employee:
-                flash('Login realizado com sucesso!', 'success')
-                login_user(employee)
-                return redirect(url_for('index'))
                 
             flash('Email ou senha inválidos', 'danger')
                 
-        return render_template('auth/login.html')
-
-    def register_user(self):
+        return render_template('auth/login_user.html')
+    
+    def login_admin(self):
         if current_user.is_authenticated:
             return redirect(url_for('index'))
 
+        if request.method == 'POST':
+            cpf = request.form['cpf']
+            password = request.form['password']
+
+            admin = self.auth_service.login_employee(cpf, password)
+
+            if admin:
+                login_user(admin)
+                flash('Administrador logado com sucesso!', 'success')
+                return redirect(url_for('index'))
+                
+            flash('CPF ou senha inválidos', 'danger')
+                
+        return render_template('auth/login_admin.html')
+
+    def register_user(self):
         if request.method == 'POST':
             username = request.form['username']
             email = request.form['email']
@@ -45,14 +56,14 @@ class AuthController:
 
             try:
                 self.auth_service.register_user(username, password, email)
-                flash('Usuario cadastrado com sucesso', 'success') 
-                return redirect(url_for('auth.login'))
+                flash('Usuário cadastrado com sucesso', 'success') 
+                return redirect(url_for('admin.user_list'))  
             except ValueError as e:
                 flash(str(e), 'danger')
 
-        return render_template('auth/register_user.html')
+        return render_template('admin/register_user.html')  
 
-    def logout_user(self):
+    def logout(self):
         logout_user()  
         flash('Você saiu com sucesso.', 'info')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login_user'))

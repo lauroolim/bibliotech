@@ -1,14 +1,18 @@
 from flask_login import UserMixin
 
-class User(UserMixin):
-    def __init__(self, id, username, email, password=None, created_at=None):
+class Employee(UserMixin):
+    def __init__(self, id, username, cpf, created_at, is_active=True, email=None, password=None):
         self.id = id
         self.username = username
+        self.cpf = cpf
+        self.created_at = created_at
+        self._is_active = is_active 
         self.email = email
         self.password = password
-        self.created_at = created_at
-        self.is_admin = True 
-        self.is_active = True
-
+        
     def get_id(self):
-        return str(self.id)
+        return f"e_{self.id}"
+        
+    @property
+    def is_active(self):
+        return self._is_active
