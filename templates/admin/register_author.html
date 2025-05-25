@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Autor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Registro de Autor</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        <div class="form-text">Digite o nome completo do autor.</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Cadastrar Autor</button>
+                        <a href="{{ url_for('admin.register_book') }}" class="btn btn-secondary">Voltar ao Cadastro de Livro</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

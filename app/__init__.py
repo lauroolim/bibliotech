@@ -2,15 +2,20 @@ from flask import Flask, render_template
 from config import config
 from database import Database
 from flask_login import LoginManager
+import logging
+
 from app.repositories.user_repository import PSQLUserRepository
 from app.repositories.employee_repository import PSQLEmployeeRepository
+from app.repositories.book_repository import PSQLBookRepository 
+
 from app.controllers.auth_controller import AuthController
-import logging
 from app.controllers.user_controller import UserController
+from app.controllers.admin_controller import AdminController
+from app.controllers.book_controller import BookController
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login_user'  
-login_manager.login_message = 'Por favor, faça login para acessar esta página.'
+login_manager.login_message = 'faça login para acessar esta pagina'
 login_manager.login_message_category = 'info'
 
 def create_app(config_name='development'):
@@ -29,9 +34,12 @@ def create_app(config_name='development'):
 
     user_repository = PSQLUserRepository(Database)
     employee_repository = PSQLEmployeeRepository(Database)
+    book_repository = PSQLBookRepository(Database)  
 
+    book_controller = BookController(book_repository)
     auth_controller = AuthController(user_repository, employee_repository)
     user_controller = UserController(user_repository)
+    admin_controller = AdminController()
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -48,8 +56,12 @@ def create_app(config_name='development'):
     app.register_blueprint(create_auth_blueprint(auth_controller))
 
     from app.routes.admin_routes import create_admin_blueprint
-    app.register_blueprint(create_admin_blueprint(user_controller))
-
+    app.register_blueprint(create_admin_blueprint(
+        user_controller, 
+        book_controller, 
+        admin_controller
+    ))
+    
     @app.route('/')
     def index():
         return render_template('index.html')

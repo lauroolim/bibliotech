@@ -8,13 +8,13 @@ class UserService:
         self.user_repository = user_repository
 
     def register_user(self, username, password, email):
-            if self.user_repository.fetch_user_by_email(email):
-                raise ValueError("email já cadastrado")
+        if self.user_repository.fetch_user_by_email(email):
+            raise ValueError("email já cadastrado")
 
-            hashed_password = hash_password(password)
-            user = self.user_repository.insert_user(username, hashed_password, email)
-            if not user:
-                raise ValueError("falha ao cadastrar usuario")
+        hashed_password = hash_password(password)
+        user = self.user_repository.insert_user(username, hashed_password, email)
+        if not user:
+            raise ValueError("falha no service de cadastro de usuario")
 
     def list_users(self, page=1, per_page=10):
         users = self.user_repository.fetch_all_users(page, per_page)
