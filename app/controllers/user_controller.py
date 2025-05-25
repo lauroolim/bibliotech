@@ -24,13 +24,15 @@ class UserController:
         return render_template('admin/register_user.html')  
     
     def list_users(self):
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
         try:
-            users = self.user_service.list_users()
+            pagination = self.user_service.list_users(page, per_page)
+            return render_template('admin/list_users.html', **pagination)
         except ValueError as e:
             flash(str(e), 'danger')
             return redirect(url_for('admin.dashboard'))
-
-        return render_template('admin/list_users.html', users=users)
 
     def delete_user(self, user_id):
         try:

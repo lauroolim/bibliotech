@@ -23,7 +23,7 @@ def create_admin_blueprint(user_controller):
     @admin_bp.route('/list-users', methods=['GET'])
     @login_required
     @admin_required
-    def list_user():
+    def list_users():
         return user_controller.list_users()
 
     return admin_bp

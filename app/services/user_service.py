@@ -16,12 +16,21 @@ class UserService:
             if not user:
                 raise ValueError("falha ao cadastrar usuario")
 
-    def list_users(self):
-        users = self.user_repository.fetch_all_users()
-        if not users:
-            raise ValueError("nenhum usuario encontrado")
+    def list_users(self, page=1, per_page=10):
+        users = self.user_repository.fetch_all_users(page, per_page)
         
-        return users
+        total_count = self.user_repository.count_users()
+        total_pages = (total_count + per_page - 1) // per_page
+        
+        return {
+            'users': users,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': total_pages,
+            'total_count': total_count,
+            'has_next': page < total_pages,
+            'has_prev': page > 1
+        }
     
     def delete_user(self, user_id):
         user = self.user_repository.fetch_user_by_id(user_id)
