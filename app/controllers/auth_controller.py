@@ -1,14 +1,14 @@
 from app.services.auth_service import AuthService
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
-import app.repositories.user_repository as UserRepository
+from app.repositories.user_repository import IUserRepository 
 
 class AuthController:
-    def __init__(self, user_repository):
+    def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
         self.auth_service = AuthService(user_repository)
 
-    def login_user(self):
+    def login(self):
         if current_user.is_authenticated:
             return redirect(url_for('index'))
 
@@ -22,8 +22,15 @@ class AuthController:
                 login_user(user)
                 flash('Logado com sucesso!', 'success')
                 return redirect(url_for('index'))
-            else:
-                flash('Email ou senha inválidos', 'danger')
+            
+            employee = self.user_repository.fetch_employee_by_email(email)
+
+            if employee:
+                flash('Login realizado com sucesso!', 'success')
+                login_user(employee)
+                return redirect(url_for('index'))
+                
+            flash('Email ou senha inválidos', 'danger')
                 
         return render_template('auth/login.html')
 

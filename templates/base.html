@@ -17,7 +17,7 @@
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <span class="nav-link">Olá, {{ current_user.username }}</span>
+                        <span class="nav-link">Eai, {{ current_user.username }}!</span>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>

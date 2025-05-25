@@ -3,7 +3,7 @@ from app.repositories.user_repository import IUserRepository
 from app.models.user import User
 
 class AuthService:
-    def __init__(self, user_repository):
+    def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
 
     def register_user(self, username, password, email):
@@ -21,6 +21,12 @@ class AuthService:
         if not user or not self._verify_password(password, user.password): 
             return None
         return user
+
+    def login_employee(self, email, password):
+        employee = self.user_repository.fetch_employee_by_email(email)
+        if not employee or not self._verify_password(password, employee.password):
+            return None
+        return employee
 
     def _hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
