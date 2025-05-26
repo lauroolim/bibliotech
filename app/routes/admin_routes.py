@@ -13,32 +13,32 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
         return admin_controller.show_dashboard()
 
     # users
-    @admin_bp.route('/register-user', methods=['GET', 'POST'])
+    @admin_bp.route('/users/register', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def register_user():
         return user_controller.register_user()
 
-    @admin_bp.route('/list-users', methods=['GET'])
+    @admin_bp.route('/users/list', methods=['GET'])
     @login_required
     @admin_required
     def list_users():
         return user_controller.list_users()
 
     # Livros
-    @admin_bp.route('/register-book', methods=['GET', 'POST'])
+    @admin_bp.route('/books/register', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def register_book():
         return book_controller.register_book()
     
-    @admin_bp.route('/register-author', methods=['GET', 'POST'])
+    @admin_bp.route('/books/author/register', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def register_author():
         return book_controller.register_author()
 
-    @admin_bp.route('/list-books', methods=['GET'])
+    @admin_bp.route('/books/list', methods=['GET'])
     @login_required
     @admin_required
     def list_books():
@@ -51,7 +51,7 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     def list_loans():
         return loan_controller.list_loans()
 
-    @admin_bp.route('/loans/create', methods=['GET', 'POST'])
+    @admin_bp.route('/loans/register', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def register_loan():

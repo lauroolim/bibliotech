@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Registro de Usuário{% endblock %}
+{% block title %}Lista de Usuários{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,8 +8,21 @@
         <div class="card-header text-dark">
             <h2 class="mb-0">Lista de Usuários</h2>
         </div>
+        <div class="card-body border-bottom">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" placeholder="Buscar usuário..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
         <div class="card-body">
-            {% if users %}
+            {% if users and users|length > 0 %}
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle">
                         <thead class="table-dark">
@@ -44,25 +57,35 @@
                     </table>
                 </div>
             {% else %}
-                <p class="text-muted">Nenhum usuário encontrado.</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                    {% if request.args.get('search') %}
+                        <p class="text-muted mt-3">Nenhum usuário "{{ request.args.get('search') }}" encontrado</p>
+                    {% else %}
+                        <p class="text-muted mt-3">Nenhum usuário cadastrado no sistema.</p>
+                        <a href="{{ url_for('admin.register_user') }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Cadastrar Primeiro Usuário
+                        </a>
+                    {% endif %}
+                </div>
             {% endif %}
             <div class="d-flex justify-content-end align-items-center">
                 <nav aria-label="Navegação de páginas">
                     <ul class="pagination mb-0">
                         <li class="page-item {% if not has_prev %}disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin.list_users', page=page-1) }}">Anterior</a>
+                            <a class="page-link" href="{{ url_for('admin.list_users', page=page-1, search=request.args.get('search')) }}">Anterior</a>
                         </li>
                         
                         {% for page_num in range(1, total_pages + 1) %}
                             <li class="page-item {% if page_num == page %}active{% endif %}">
-                                <a class="page-link" href="{{ url_for('admin.list_users', page=page_num) }}">
+                                <a class="page-link" href="{{ url_for('admin.list_users', page=page_num, search=request.args.get('search')) }}">
                                     {{ page_num }}
                                 </a>
                             </li>
                         {% endfor %}
                         
                         <li class="page-item {% if not has_next %}disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('admin.list_users', page=page+1) }}">Próximo</a>
+                            <a class="page-link" href="{{ url_for('admin.list_users', page=page+1, search=request.args.get('search')) }}">Próximo</a>
                         </li>
                     </ul>
                 </nav>
@@ -70,7 +93,7 @@
         </div>
         <div class="card-footer text-end justify-content-between d-flex">
             <div>
-                <span class="text-muted">Total: {{ total_count or 0 }} livros</span>
+                <span class="text-muted">Total: {{ total_count or 0 }} usuários</span>
             </div>
             <a href="{{ url_for('admin.register_user') }}" class="btn btn-success">
                 <i class="bi bi-plus-lg"></i> Novo Usuário

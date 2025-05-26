@@ -26,10 +26,11 @@ class UserController:
     
     def list_users(self):
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int) 
+        per_page = request.args.get('per_page', 10, type=int)
+        search = request.args.get('search', '', type=str)
         
         try:
-            pagination = self.user_service.list_users(page, per_page)
+            pagination = self.user_service.list_users(page, per_page, search)
             return render_template('admin/list_users.html', **pagination)
         except ValueError as e:
             flash(str(e), 'danger')

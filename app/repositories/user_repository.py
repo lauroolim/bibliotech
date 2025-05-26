@@ -110,10 +110,22 @@ class PSQLUserRepository(IUserRepository):
             logger.error(f"falha ao deletar usuario no banco: {str(e)}")
             return False
 
-    def fetch_all_users(self, page, per_page):
+    def fetch_all_users(self, page, per_page, search: str = None):
         offset = (page - 1) * per_page
-        query = "SELECT id, username, email, phone, password, created_at FROM users ORDER BY id LIMIT ? OFFSET ?"
-        params = [per_page, offset]
+        
+        if search:
+            query = """
+                SELECT id, username, email, phone, password, created_at 
+                FROM users 
+                WHERE username LIKE ? OR email LIKE ? 
+                ORDER BY id 
+                LIMIT ? OFFSET ?
+            """
+            search_param = f"%{search}%"
+            params = [search_param, search_param, per_page, offset]
+        else:
+            query = "SELECT id, username, email, phone, password, created_at FROM users ORDER BY id LIMIT ? OFFSET ?"
+            params = [per_page, offset]
 
         try:
             cursor = self.db.execute_query(query, params)
@@ -135,11 +147,17 @@ class PSQLUserRepository(IUserRepository):
             logger.error(f"falha ao buscar todos os usuarios no banco: {str(e)}")
             return []
 
-    def count_users(self):
-        query = "SELECT COUNT(*) FROM users"
+    def count_users(self, search: str = None):
+        if search:
+            query = "SELECT COUNT(*) FROM users WHERE username LIKE ? OR email LIKE ?"
+            search_param = f"%{search}%"
+            params = [search_param, search_param]
+        else:
+            query = "SELECT COUNT(*) FROM users"
+            params = []
         
         try:
-            cursor = self.db.execute_query(query)
+            cursor = self.db.execute_query(query, params)
             result = cursor.fetchone()
             return result[0] if result else 0
         except Exception as e:

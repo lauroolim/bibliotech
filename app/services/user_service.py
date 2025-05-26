@@ -16,10 +16,9 @@ class UserService:
         if not user:
             raise ValueError("falha no service de cadastro de usuario")
 
-    def list_users(self, page=1, per_page=10):
-        users = self.user_repository.fetch_all_users(page, per_page)
-        
-        total_count = self.user_repository.count_users()
+    def list_users(self, page=1, per_page=10, search=None):
+        users = self.user_repository.fetch_all_users(page, per_page, search)
+        total_count = self.user_repository.count_users(search)  
         total_pages = (total_count + per_page - 1) // per_page
         
         return {
