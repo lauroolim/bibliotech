@@ -3,29 +3,74 @@
 {% block title %}Buscar Livro{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center mt-5">
-    <form action="" method="get"
-                class="w-75 p-4 border rounded shadow"
-                style="max-width:600px;">
-        <div class="text-center mb-4">
-            <h1 class="h3">Buscar Livro</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-center mb-4">Buscar Livro</h3>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" 
+                               id="isbn" 
+                               class="form-control" 
+                               placeholder="Digite o ISBN">
+                        <button onclick="buscarLivro()" class="btn btn-primary">
+                            Buscar
+                        </button>
+                    </div>
+                    
+                    <div id="resultado"></div>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <input type="text"
-                         name="isbn"
-                         class="form-control form-control-lg"
-                         placeholder="Digite o ISBN do livro"
-                         required>
-        </div>
-        <div class="d-flex justify-content-between">
-            <a href="" class="btn btn-outline-primary btn-lg">Pesquisa Personalizada</a>
-            <button type="submit"
-                            name="action"
-                            value="simple"
-                            class="btn btn-primary btn-lg">
-                Buscar
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
+
+<script>
+function buscarLivro() {
+    const isbn = document.getElementById('isbn').value.trim();
+    const resultado = document.getElementById('resultado');
+    if (!isbn) {
+        resultado.innerHTML = '<div class="alert alert-warning">Digite um ISBN</div>';
+        return;
+    }
+    
+    resultado.innerHTML = '<div class="text-center">Buscando...</div>';
+    
+    fetch(`/api/books/search?term=${isbn}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultado.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            
+            } else {
+                const status = data.available ? 'Disponível' : 'Indisponível';
+                const cor = data.available ? 'success' : 'danger';
+                
+                resultado.innerHTML = `
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">${data.title}</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>ISBN:</strong> ${data.isbn}</li>
+                                <li class="list-group-item"><strong>Autor:</strong> ${data.author || 'Não informado'}</li>
+                                <li class="list-group-item"><strong>Ano de Publicação:</strong> ${data.publication_year || 'Não informado'}</li>
+                                <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-${cor}">${status}</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+        })
+        .catch(() => {
+            resultado.innerHTML = '<div class="alert alert-danger">Erro na busca</div>';
+        });
+}
+document.getElementById('isbn').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') buscarLivro();
+});
+</script>
 {% endblock %}

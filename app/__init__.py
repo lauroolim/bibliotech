@@ -71,6 +71,10 @@ def create_app(config_name='development'):
         loan_controller
     ))
     
+    from app.routes.book_routes import create_book_blueprint
+    book_bp = create_book_blueprint(book_controller)
+    app.register_blueprint(book_bp)
+
     @app.route('/')
     def index():
         return render_template('index.html')
