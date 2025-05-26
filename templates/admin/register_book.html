@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Livro{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Registro de Livro</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Título</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="isbn" class="form-label">ISBN</label>
+                                <input type="text" class="form-control" id="isbn" name="isbn" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="publish_year" class="form-label">Ano de Publicação</label>
+                        <input type="number" class="form-control" id="publish_year" name="publish_year" min="1000" max="{{ current_year }}">
+                        <div class="form-text">Campo opcional. Deixe em branco se não souber o ano.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Autores</label>
+                        {% if authors %}
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                {% for author in authors %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="author_ids" value="{{ author.id }}" id="author_{{ author.id }}">
+                                        <label class="form-check-label" for="author_{{ author.id }}">
+                                            {{ author.full_name }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text">Selecione um ou mais autores para este livro.</div>
+                        {% else %}
+                            <p class="text-muted">Nenhum autor cadastrado. <a href="{{ url_for('admin.register_author') }}">Cadastrar primeiro autor</a></p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="submit" class="btn btn-primary">Registrar Livro</button>
+                            <a href="{{ url_for('admin.list_books') }}" class="btn btn-secondary ms-2">Ver Lista de Livros</a>
+                        </div>
+                        <a href="{{ url_for('admin.register_author') }}" class="btn btn-outline-success">Cadastrar Novo Autor</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
