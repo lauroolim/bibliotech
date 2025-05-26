@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Empréstimo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Novo Empréstimo</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="loanForm">
+                        <div class="mb-4">
+                            <label class="form-label">Usuário</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="user_search" 
+                                       placeholder="Digite email do usuário" required>
+                                <button type="button" class="btn btn-outline-secondary" id="searchUserBtn">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                            <div id="userResult" class="mt-2"></div>
+                            <input type="hidden" name="user_id" id="user_id" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Livro</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="book_search" 
+                                       placeholder="Digite ISBN do livro" required>
+                                <button type="button" class="btn btn-outline-secondary" id="searchBookBtn">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                            <div id="bookResult" class="mt-2"></div>
+                            <input type="hidden" name="book_id" id="book_id" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="expected_return_date" class="form-label">Prazo de Devolução</label>
+                            <input type="date" class="form-control" name="expected_return_date" 
+                                   id="expected_return_date" required>
+                            <div class="form-text">Prazo padrão: 14 dias</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.list_loans') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="bi bi-plus-circle"></i> Criar Empréstimo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/search_base.js') }}"></script>
+<script src="{{ url_for('static', filename='js/form_utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user_search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/book_search.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    FormUtils.setDefaultDate('expected_return_date', 14);
+    
+    new UserSearch({
+        searchUrl: '{{ url_for("admin.search_user_ajax") }}',
+        onSelected: () => FormUtils.validateForm(['user_id', 'book_id'], 'submitBtn')
+    });
+    
+    new BookSearch({
+        searchUrl: '{{ url_for("admin.search_book_ajax") }}',
+        availabilityUrl: '{{ url_for("admin.check_book_availability") }}',
+        onSelected: () => FormUtils.validateForm(['user_id', 'book_id'], 'submitBtn')
+    });
+    
+    FormUtils.validateForm(['user_id', 'book_id'], 'submitBtn');
+});
+</script>
+{% endblock %}

@@ -13,9 +13,10 @@ class UserController:
             username = request.form['username']
             email = request.form['email']
             password = request.form['password']
+            phone = request.form['phone']
 
             try:
-                self.user_service.register_user(username, password, email)
+                self.user_service.register_user(username, password, email, phone)
                 flash('Usuário cadastrado com sucesso', 'success') 
                 return redirect(url_for('admin.register_user'))  
             except ValueError as e:

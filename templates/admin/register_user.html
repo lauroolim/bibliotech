@@ -21,7 +21,15 @@
                         <label for="password" class="form-label">senha</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">tel</label>
+                        <input type="phone" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                        <a href="{{ url_for('admin.list_users') }}" class="btn btn-secondary ms-2">Ver Lista de Usuários</a>
+                    </div>
+    
                 </form>
             </div>
         </div>

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Empréstimo #{{ loan.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.list_loans') }}">Empréstimos</a></li>
+                    <li class="breadcrumb-item active">Empréstimo #{{ loan.id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Empréstimo #{{ loan.id }}</h2>
+                    <span class="badge bg-{% if loan.status == 'ativo' %}success{% elif loan.status == 'atrasado' %}danger{% else %}secondary{% endif %} fs-6">
+                        {% if loan.status == 'ativo' %}
+                            Ativo
+                        {% elif loan.status == 'atrasado' %}
+                            Atrasado
+                        {% else %}
+                            Devolvido
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Informações do Empréstimo</h4>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data do Empréstimo:</th>
+                                        <td>{{ loan.created_at.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data Prevista de Devolução:</th>
+                                        <td>
+                                            {{ loan.expected_return_date.strftime('%d/%m/%Y') }}
+                                            {% if loan.is_overdue and not loan.returned_at %}
+                                                <span class="badge bg-danger">{{ loan.days_overdue() }} dias de atraso</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data de Devolução:</th>
+                                        <td>
+                                            {% if loan.returned_at %}
+                                                {{ loan.returned_at.strftime('%d/%m/%Y') }}
+                                                {% if loan.returned_at > loan.expected_return_date %}
+                                                    <span class="badge bg-warning text-dark">Devolução com atraso</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Dentro do prazo</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Não devolvido</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Status:</th>
+                                        <td>
+                                            {% if loan.status == 'ativo' %}
+                                                <span class="badge bg-success">Ativo</span>
+                                            {% elif loan.status == 'atrasado' %}
+                                                <span class="badge bg-danger">Atrasado</span>
+                                            {% elif loan.status == 'encerrado' %}
+                                                <span class="badge bg-secondary">Devolvido</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Responsáveis</h4>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Usuário:</th>
+                                        <td>
+                                            {% if loan.user %}
+                                                <strong>{{ loan.user.username }}</strong><br>
+                                                <small class="text-muted">{{ loan.user.email }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Não encontrado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Funcionário:</th>
+                                        <td>
+                                            {% if loan.employee %}
+                                                <strong>{{ loan.employee.username }}</strong><br>
+                                                <small class="text-muted">{{ loan.employee.email }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Não encontrado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Livro</h4>
+                </div>
+                <div class="card-body">
+                    {% if loan.book %}
+                        <div class="text-center mb-3">
+                            <i class="bi bi-book text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="card-title">{{ loan.book.title }}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">ISBN: {{ loan.book.isbn }}</small>
+                        </p>
+                        <hr>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-info-circle"></i> Ver Detalhes do Livro
+                        </a>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-question-circle text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3">Informações do livro não disponíveis.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0">Ações</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if loan.status in ['ativo', 'atrasado'] %}
+                            <a href="{{ url_for('admin.return_loan', loan_id=loan.id) }}" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Processar Devolução
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('admin.list_loans') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar para Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -10,11 +10,19 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
+    def fetch_book_by_id(self, book_id: int) -> Book:
+        pass
+
+    @abstractmethod
     def fetch_book_by_isbn(self, isbn: str) -> Book:
         pass
 
     @abstractmethod
     def fetch_all_books(self, page: int, per_page: int) -> list[Book]:
+        pass
+
+    @abstractmethod
+    def count_books(self) -> int:
         pass
 
     @abstractmethod
@@ -26,30 +34,65 @@ class IBookRepository(ABC):
         pass
 
     @abstractmethod
+    def fetch_author_by_id(self, author_id: int) -> dict:
+        pass
+
+    @abstractmethod
     def associate_book_author(self, book_id: int, author_id: int) -> bool:
         pass
 
     @abstractmethod
-    def count_books(self) -> int:
+    def is_book_available(self, book_id: int) -> bool:
         pass
-
 
 class PSQLBookRepository(IBookRepository):
     def __init__(self, db):
         self.db = db
 
-    def insert_book(self, title: str, isbn: str, publish_year: int = None):
-        query = "INSERT INTO bibliotech.books (title, isbn, publish_year) VALUES (?, ?, ?)"
-        params = [title, isbn, publish_year]  
+    def insert_book(self, title, isbn, publish_year=None):
+        insert_query = "INSERT INTO bibliotech.books (title, isbn, publish_year) VALUES (?, ?, ?)"
+        select_query = "SELECT id FROM bibliotech.books WHERE isbn = ?"
+        insert_params = [title, isbn, publish_year]
 
         try:
-            self.db.execute_query(query, params)
-            return True
+            self.db.execute_query(insert_query, insert_params)
+            cursor = self.db.execute_query(select_query, [isbn])
+            result = cursor.fetchone()
+            
+            if result:
+                logger.info(f"Livro inserido com sucesso. ID: {result[0]}")
+                return result[0]
+            
+            logger.error("Livro inserido mas ID não encontrado")
+            return None
         except Exception as e:
             logger.error(f"Erro ao inserir livro: {str(e)}")
-            return False
+            return None
 
-    def fetch_book_by_isbn(self, isbn: str):
+    def fetch_book_by_id(self, book_id):
+        query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books WHERE id = ?"
+        params = [book_id]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            book = cursor.fetchone()
+
+            if book:
+                authors = self._fetch_authors_by_book_id(book[0])
+                return Book(
+                    id=book[0], 
+                    title=book[1], 
+                    isbn=book[2], 
+                    publish_year=book[3], 
+                    created_at=book[4],
+                    authors=authors
+                )
+            return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar livro por ID: {str(e)}")
+            return None
+
+    def fetch_book_by_isbn(self, isbn):
         query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books WHERE isbn = ?"
         params = [isbn]
 
@@ -67,12 +110,12 @@ class PSQLBookRepository(IBookRepository):
                 )
             return None
         except Exception as e:
-            logger.error(f"falha ao buscar livro por ISBN: {str(e)}")
+            logger.error(f"Falha ao buscar livro por ISBN: {str(e)}")
             return None
 
-    def fetch_all_books(self, page: int, per_page: int):
+    def fetch_all_books(self, page, per_page):
         offset = (page - 1) * per_page
-        query = "SELECT DISTINCT b.id, b.title, b.isbn, b.publish_year, b.created_at FROM bibliotech.books b ORDER BY b.id LIMIT ? OFFSET ?"
+        query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books ORDER BY id LIMIT ? OFFSET ?"
         params = [per_page, offset]
 
         try:
@@ -80,22 +123,19 @@ class PSQLBookRepository(IBookRepository):
             books = cursor.fetchall()
 
             if books:
-                books_with_authors = []
-                for book in books:
-                    authors = self._fetch_authors_by_book_id(book[0])
-                    book_obj = Book(
+                return [
+                    Book(
                         id=book[0], 
                         title=book[1], 
                         isbn=book[2], 
                         publish_year=book[3], 
                         created_at=book[4],
-                        authors=authors
-                    )
-                    books_with_authors.append(book_obj)
-                return books_with_authors
+                        authors=self._fetch_authors_by_book_id(book[0])
+                    ) for book in books
+                ]
             return []
         except Exception as e:
-            logger.error(f"falha ao buscar todos os livros: {str(e)}")
+            logger.error(f"Falha ao buscar todos os livros: {str(e)}")
             return []
 
     def count_books(self):
@@ -106,7 +146,7 @@ class PSQLBookRepository(IBookRepository):
             result = cursor.fetchone()
             return result[0] if result else 0
         except Exception as e:
-            logger.error(f"falha ao contar total de livros: {str(e)}")
+            logger.error(f"Falha ao contar total de livros: {str(e)}")
             return 0
 
     def fetch_all_authors(self):
@@ -117,10 +157,10 @@ class PSQLBookRepository(IBookRepository):
             authors = cursor.fetchall()
             return [{'id': author[0], 'full_name': author[1]} for author in authors]
         except Exception as e:
-            logger.error(f"erro ao buscar autores: {str(e)}")
+            logger.error(f"Erro ao buscar autores: {str(e)}")
             return []
     
-    def insert_author(self, full_name: str):
+    def insert_author(self, full_name):
         query = "INSERT INTO bibliotech.authors (full_name) VALUES (?)"
         params = [full_name]
 
@@ -130,16 +170,42 @@ class PSQLBookRepository(IBookRepository):
         except Exception as e:
             logger.error(f"Erro ao inserir autor: {str(e)}")
             return False
-    
-    def associate_book_author(self, book_id: int, author_id: int):
-        query = "INSERT INTO bibliotech.books_authors (book_id, author_id) VALUES (?, ?)"
-        params = [book_id, author_id]
+
+    def fetch_author_by_id(self, author_id):
+        query = "SELECT id, full_name FROM bibliotech.authors WHERE id = ?"
+        params = [author_id]
 
         try:
-            self.db.execute_query(query, params)
+            cursor = self.db.execute_query(query, params)
+            author = cursor.fetchone()
+            return {'id': author[0], 'full_name': author[1]} if author else None
+        except Exception as e:
+            logger.error(f"Falha ao buscar autor por ID: {str(e)}")
+            return None
+    
+    def associate_book_author(self, book_id, author_id):
+        # Verificar se associação já existe
+        check_query = "SELECT COUNT(*) FROM bibliotech.books_authors WHERE book_id = ? AND author_id = ?"
+        
+        try:
+            cursor = self.db.execute_query(check_query, [book_id, author_id])
+            result = cursor.fetchone()
+            
+            if result and result[0] > 0:
+                logger.warning(f"Associação já existe: livro {book_id} com autor {author_id}")
+                return True
+        except Exception as e:
+            logger.error(f"Erro ao verificar associação: {str(e)}")
+
+        # Inserir nova associação
+        insert_query = "INSERT INTO bibliotech.books_authors (book_id, author_id) VALUES (?, ?)"
+        
+        try:
+            self.db.execute_query(insert_query, [book_id, author_id])
+            logger.info(f"Associação criada: livro {book_id} com autor {author_id}")
             return True
         except Exception as e:
-            logger.error(f"erro ao associar livro e autor: {str(e)}")
+            logger.error(f"Erro ao associar livro {book_id} e autor {author_id}: {str(e)}")
             return False
     
     def _fetch_authors_by_book_id(self, book_id):
@@ -157,5 +223,18 @@ class PSQLBookRepository(IBookRepository):
             authors = cursor.fetchall()
             return [{'id': author[0], 'full_name': author[1]} for author in authors]
         except Exception as e:
-            logger.error(f"falha ao buscar autores do livro {book_id}: {str(e)}")
+            logger.error(f"Falha ao buscar autores do livro {book_id}: {str(e)}")
             return []
+
+    def is_book_available(self, book_id):
+        query = "SELECT COUNT(*) FROM bibliotech.loans WHERE book_id = ? AND returned_at IS NULL"
+        params = [book_id]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            result = cursor.fetchone()
+            count = result[0] if result else 0
+            return count == 0
+        except Exception as e:
+            logger.error(f"Erro ao verificar disponibilidade do livro: {str(e)}")
+            return False

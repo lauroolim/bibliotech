@@ -7,11 +7,15 @@ import logging
 from app.repositories.user_repository import PSQLUserRepository
 from app.repositories.employee_repository import PSQLEmployeeRepository
 from app.repositories.book_repository import PSQLBookRepository 
+from app.repositories.loan_repository import PSQLLoanRepository
+
+from app.services.loan_service import LoanService
 
 from app.controllers.auth_controller import AuthController
 from app.controllers.user_controller import UserController
 from app.controllers.admin_controller import AdminController
 from app.controllers.book_controller import BookController
+from app.controllers.loan_controller import LoanController
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login_user'  
@@ -35,11 +39,15 @@ def create_app(config_name='development'):
     user_repository = PSQLUserRepository(Database)
     employee_repository = PSQLEmployeeRepository(Database)
     book_repository = PSQLBookRepository(Database)  
+    loan_repository = PSQLLoanRepository(Database)
 
-    book_controller = BookController(book_repository)
+    loan_service = LoanService(loan_repository, user_repository, book_repository)
+
+    book_controller = BookController(book_repository, loan_repository)
     auth_controller = AuthController(user_repository, employee_repository)
     user_controller = UserController(user_repository)
-    admin_controller = AdminController()
+    admin_controller = AdminController(loan_service)  
+    loan_controller = LoanController(loan_repository, user_repository, book_repository)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -59,7 +67,8 @@ def create_app(config_name='development'):
     app.register_blueprint(create_admin_blueprint(
         user_controller, 
         book_controller, 
-        admin_controller
+        admin_controller,
+        loan_controller
     ))
     
     @app.route('/')
