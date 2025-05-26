@@ -1,11 +1,12 @@
 from app.services.book_service import BookService
 from flask import render_template, request, redirect, url_for, flash
 from app.repositories.book_repository import IBookRepository
-
+from app.repositories.loan_repository import ILoanRepository
 class BookController:
-    def __init__(self, book_repository: IBookRepository):
+    def __init__(self, book_repository: IBookRepository, loan_repository: ILoanRepository = None):
         self.book_repository = book_repository
-        self.book_service = BookService(book_repository)
+        self.loan_repository = loan_repository
+        self.book_service = BookService(book_repository, loan_repository)
 
     def register_book(self):
         if request.method == 'POST':
@@ -18,7 +19,7 @@ class BookController:
                 try:
                     publish_year = int(publish_year)
                 except ValueError:
-                    flash('ano de publicação deve ser um número', 'danger')
+                    flash('Ano de publicação deve ser um número', 'danger')
                     authors = self.book_service.get_all_authors()
                     return render_template('admin/register_book.html', authors=authors)
 
@@ -38,7 +39,7 @@ class BookController:
             
             try:
                 self.book_service.register_author(full_name)
-                flash('autor cadastrado com sucesso', 'success')
+                flash('Autor cadastrado com sucesso', 'success')
                 return redirect(url_for('admin.register_author'))
             except ValueError as e:
                 flash(str(e), 'danger')

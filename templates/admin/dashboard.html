@@ -1,7 +1,122 @@
 {% extends 'base.html' %}
 
-{% block title %}registro de usuário{% endblock %}
+{% block title %}Dashboard Administrativo{% endblock %}
 
 {% block content %}
-<h1>admin dashboard</h1>
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Dashboard Administrativo</h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Empréstimos Ativos</h6>
+                            <h3 class="mb-0">{{ stats.active_loans or 0 }}</h3>
+                        </div>
+                        <i class="bi bi-book fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Em Atraso</h6>
+                            <h3 class="mb-0">{{ stats.overdue_loans or 0 }}</h3>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Devolvidos Hoje</h6>
+                            <h3 class="mb-0">{{ stats.returned_today or 0 }}</h3>
+                        </div>
+                        <i class="bi bi-check-circle fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Total do Mês</h6>
+                            <h3 class="mb-0">{{ stats.monthly_loans or 0 }}</h3>
+                        </div>
+                        <i class="bi bi-calendar fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.register_loan') }}" class="btn btn-primary btn-lg w-100 d-flex flex-column align-items-center py-3">
+                                <i class="bi bi-plus-circle fs-3 mb-2"></i>
+                                <span>Novo Empréstimo</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.list_loans') }}" class="btn btn-info btn-lg w-100 d-flex flex-column align-items-center py-3">
+                                <i class="bi bi-list fs-3 mb-2"></i>
+                                <span>Ver Empréstimos</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.register_book') }}" class="btn btn-success btn-lg w-100 d-flex flex-column align-items-center py-3">
+                                <i class="bi bi-book fs-3 mb-2"></i>
+                                <span>Cadastrar Livro</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.register_user') }}" class="btn btn-warning btn-lg w-100 d-flex flex-column align-items-center py-3">
+                                <i class="bi bi-person-plus fs-3 mb-2"></i>
+                                <span>Cadastrar Usuário</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.overdue_loans and stats.overdue_loans > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning shadow-sm"></div>
+                <h5><i class="bi bi-exclamation-triangle"></i> Atenção!</h5>
+                <p>Há {{ stats.overdue_loans }} empréstimo(s) em atraso. 
+                   <a href="{{ url_for('admin.overdue_loans') }}" class="alert-link">Clique aqui para ver a lista completa</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

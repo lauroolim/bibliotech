@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Processar Devolução{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Processar Devolução</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Detalhes do Empréstimo</h5>
+                        <div class="bg-light p-3 rounded">
+                            <p><strong>ID:</strong> {{ loan.id }}</p>
+                            <p><strong>Usuário:</strong> {{ loan.user.username }}</p>
+                            <p><strong>Livro:</strong> {{ loan.book.title }}</p>
+                            <p><strong>Data Empréstimo:</strong> {{ loan.created_at.strftime('%d/%m/%Y') }}</p>
+                            <p><strong>Prazo:</strong> {{ loan.expected_return_date.strftime('%d/%m/%Y') }}</p>
+                            
+                            {% if loan.days_overdue() > 0 %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Empréstimo em atraso:</strong> {{ loan.days_overdue() }} dias
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="return_date" class="form-label">Data de Devolução</label>
+                            <input type="date" class="form-control" name="return_date" 
+                                   id="return_date" value="{{ today }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="book_condition" class="form-label">Condição do Livro</label>
+                            <select class="form-select" name="book_condition" required>
+                                <option value="bom">Bom estado</option>
+                                <option value="danificado">Danificado</option>
+                                <option value="perdido">Perdido</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="return_notes" class="form-label">Observações</label>
+                            <textarea class="form-control" name="return_notes" rows="3"></textarea>
+                        </div>
+
+                        {% if loan.days_overdue() > 0 %}
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <h6>Cálculo de Multa</h6>
+                                <p>Dias de atraso: {{ loan.days_overdue() }}</p>
+                                <p>Valor por dia: R$ 2,00</p>
+                                <p><strong>Total da multa: R$ {{ "%.2f"|format(loan.days_overdue() * 2) }}</strong></p>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="fine_paid" id="fine_paid">
+                                <label class="form-check-label" for="fine_paid">
+                                    Multa paga
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.list_loans') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Confirmar Devolução
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

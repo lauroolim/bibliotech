@@ -30,34 +30,42 @@ class Database:
         conn.setencoding(encoding='utf-8')
         
         is_select = query.strip().upper().startswith("SELECT")
+        is_returning = "RETURNING" in query.upper()
 
         cursor = conn.cursor()
         try:
             logger.debug(f"executando query: {query} e params: {params}")
             
             if params:
-                if is_select:
+                if is_select or is_returning:
                     cursor.execute(query, *params)
                 else:
                     cursor.execute(query, params)
             else:
                 cursor.execute(query)
 
-            if is_select:
-                return cursor
+            if is_returning and commit:
+                conn.commit()
+                logger.debug("Commit realizado para query RETURNING")
+
+            if is_select or is_returning:
+                return cursor 
             else:
                 if commit:
                     conn.commit()
+                    logger.debug("Commit realizado")
                 return cursor
         except Exception as e:
             logger.error(f"erro ao executar query: {e}")
-            logger.error(f"query: {query}")
-            logger.error(f"params: {params}")
             if commit:
                 conn.rollback()
+                logger.debug("Rollback realizado")
+
+            cursor.close()
+            conn.close()
             raise
         finally:
-            if not is_select:
+            if not (is_select or is_returning):
                 cursor.close()
                 conn.close()
 

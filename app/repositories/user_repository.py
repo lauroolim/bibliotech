@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class IUserRepository(ABC):
     @abstractmethod
-    def insert_user(self, username: str, password: str, email: str) -> bool:
+    def insert_user(self, username: str, password: str, email: str, phone: str) -> bool:
         pass
 
     @abstractmethod
@@ -18,7 +18,7 @@ class IUserRepository(ABC):
         pass
 
     @abstractmethod
-    def update_user(self, user_id: int, username: str, email: str) -> bool:
+    def update_user(self, user_id: int, username: str, email: str, phone: str) -> bool:
         pass
 
     @abstractmethod
@@ -33,19 +33,19 @@ class PSQLUserRepository(IUserRepository):
     def __init__(self, db):
         self.db = db
 
-    def insert_user(self, username, password, email):
-        query = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)"
-        params = [username, password, email]  
+    def insert_user(self, username, password, email, phone):
+        query = "INSERT INTO users (username, password, email, phone) VALUES (?, ?, ?, ?)"
+        params = [username, password, email, phone]  # Corrigido para incluir phone
 
         try:
             self.db.execute_query(query, params)
             return True
         except Exception as e:
-            print(f"Erro ao inserir usuário: {str(e)}")
+            logger.error(f"Erro ao inserir usuário: {str(e)}")
             return False
 
     def fetch_user_by_email(self, email):
-        query = "SELECT id, username, email, password, created_at FROM users WHERE email = ?"
+        query = "SELECT id, username, email, phone, password, created_at FROM users WHERE email = ?"
         params = [email]
 
         try:
@@ -53,14 +53,21 @@ class PSQLUserRepository(IUserRepository):
             user = cursor.fetchone()
 
             if user:
-                return User(id=user[0], username=user[1], email=user[2], password=user[3], created_at=user[4])
+                return User(
+                    id=user[0], 
+                    username=user[1], 
+                    email=user[2], 
+                    phone=user[3],
+                    password=user[4], 
+                    created_at=user[5]
+                )
             return None
         except Exception as e:
             logger.error(f"falha ao buscar usuario no banco: {str(e)}")
             return None
 
     def fetch_user_by_id(self, user_id):
-        query = "SELECT id, username, email, password, created_at FROM users WHERE id = ?"
+        query = "SELECT id, username, email, phone, password, created_at FROM users WHERE id = ?"
         params = [int(user_id)]  
 
         try:
@@ -68,15 +75,22 @@ class PSQLUserRepository(IUserRepository):
             user = cursor.fetchone()
 
             if user:
-                return User(id=user[0], username=user[1], email=user[2], password=user[3], created_at=user[4])
+                return User(
+                    id=user[0], 
+                    username=user[1], 
+                    email=user[2],
+                    phone=user[3],
+                    password=user[4], 
+                    created_at=user[5]
+                )
             return None
         except Exception as e:
             logger.error(f"falha ao buscar usuario no banco: {str(e)}")
             return None
     
-    def update_user(self, user_id, username, email):
-        query = "UPDATE users SET username = ?, email = ? WHERE id = ?"
-        params = [username, email, int(user_id)]  
+    def update_user(self, user_id, username, email, phone):
+        query = "UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?"
+        params = [username, email, phone, int(user_id)]  
 
         try:
             self.db.execute_query(query, params)
@@ -98,7 +112,7 @@ class PSQLUserRepository(IUserRepository):
 
     def fetch_all_users(self, page, per_page):
         offset = (page - 1) * per_page
-        query = "SELECT id, username, email, password, created_at FROM users ORDER BY id LIMIT ? OFFSET ?"
+        query = "SELECT id, username, email, phone, password, created_at FROM users ORDER BY id LIMIT ? OFFSET ?"
         params = [per_page, offset]
 
         try:
@@ -106,7 +120,16 @@ class PSQLUserRepository(IUserRepository):
             users = cursor.fetchall()
 
             if users:
-                return [User(id=user[0], username=user[1], email=user[2], password=user[3], created_at=user[4]) for user in users]
+                return [
+                    User(
+                        id=user[0], 
+                        username=user[1], 
+                        email=user[2],
+                        phone=user[3], 
+                        password=user[4], 
+                        created_at=user[5]
+                    ) for user in users
+                ]
             return []
         except Exception as e:
             logger.error(f"falha ao buscar todos os usuarios no banco: {str(e)}")
