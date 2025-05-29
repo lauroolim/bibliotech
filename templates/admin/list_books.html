@@ -8,6 +8,19 @@
         <div class="card-header text-dark">
             <h2 class="mb-0">Lista de Livros</h2>
         </div>
+        <div class="card-body border-bottom">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control" placeholder="Buscar usuário..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ url_for('admin.list_books') }}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
         <div class="card-body">
             {% if books %}
                 <div class="table-responsive">
