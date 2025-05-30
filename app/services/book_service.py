@@ -1,13 +1,11 @@
 from app.repositories.book_repository import IBookRepository
-from app.repositories.loan_repository import ILoanRepository
 import logging
 
 logger = logging.getLogger(__name__)
 
 class BookService:
-    def __init__(self, book_repository: IBookRepository, loan_repository: ILoanRepository = None):
+    def __init__(self, book_repository: IBookRepository):
         self.book_repository = book_repository
-        self.loan_repository = loan_repository
 
     def register_book(self, title, isbn, publish_year=None, author_ids=None):
         if not title or not title.strip():
@@ -45,9 +43,8 @@ class BookService:
         total_count = self.book_repository.count_books(search) 
         total_pages = (total_count + per_page - 1) // per_page
 
-        if self.loan_repository:
-            for book in books:
-                book.is_available = self.loan_repository.is_book_available(book.id)
+        for book in books:
+            book.is_available = self.book_repository.is_book_available(book.id)
         
         return {
             'books': books,
@@ -86,17 +83,12 @@ class BookService:
         
         book = self.book_repository.fetch_book_by_isbn(isbn.strip())
         if not book:
-            raise ValueError(f"Livro com ISBN {isbn} não encontrado")
+            raise ValueError(f"livro com ISBN {isbn} não encontrado")
         
         book.authors = self.book_repository._fetch_authors_by_book_id(book.id)
-        
-        if self.loan_repository:
-            book.is_available = self.loan_repository.is_book_available(book.id)
-            book.available_copies = 1 if book.is_available else 0
-            book.total_copies = 1
-        else:
-            book.is_available = True
-            book.available_copies = 1
-            book.total_copies = 1
+    
+        book.is_available = self.book_repository.is_book_available(book.id)
+        book.available_copies = 1 if book.is_available else 0
+        book.total_copies = 1
         
         return book

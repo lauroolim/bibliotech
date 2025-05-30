@@ -18,10 +18,6 @@ class ILoanRepository(ABC):
         pass
 
     @abstractmethod
-    def is_book_available(self, book_id: int) -> bool:
-        pass
-
-    @abstractmethod
     def fetch_all_loans(self, page: int, per_page: int, status: str = None, search: str = None) -> list[Loan]:
         pass
 
@@ -62,21 +58,6 @@ class PSQLLoanRepository(ILoanRepository):
         except Exception as e:
             logger.error(f"Erro ao criar empréstimo: {str(e)}")
             return None
-
-    def is_book_available(self, book_id):
-        query = "SELECT COUNT(*) FROM loans WHERE book_id = ? AND returned_at IS NULL"
-        params = [book_id]
-
-        try:
-            cursor = self.db.execute_query(query, params)
-            result = cursor.fetchone()
-            cursor.close()
-            
-            count = result[0] if result else 0
-            return count == 0  
-        except Exception as e:
-            logger.error(f"falha ao verificar disponibilidade do livro {book_id}: {str(e)}")
-            return False
 
     def fetch_loan_by_id(self, loan_id):
         query = """

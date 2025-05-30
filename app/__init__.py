@@ -48,8 +48,9 @@ def create_app(config_name='development'):
     loan_service = LoanService(loan_repository, user_repository, book_repository)
     user_service = UserService(user_repository)
     auth_service = AuthService(user_repository, employee_repository)
+    book_service = BookService(book_repository)
 
-    book_controller = BookController(book_repository, loan_repository)
+    book_controller = BookController(book_service)
     auth_controller = AuthController(auth_service)
     user_controller = UserController(user_repository)
     admin_controller = AdminController(loan_service)  

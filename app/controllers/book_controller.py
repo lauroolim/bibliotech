@@ -1,12 +1,8 @@
 from app.services.book_service import BookService
 from flask import render_template, request, redirect, url_for, flash
-from app.repositories.book_repository import IBookRepository
-from app.repositories.loan_repository import ILoanRepository
 class BookController:
-    def __init__(self, book_repository: IBookRepository, loan_repository: ILoanRepository = None):
-        self.book_repository = book_repository
-        self.loan_repository = loan_repository
-        self.book_service = BookService(book_repository, loan_repository)
+    def __init__(self, book_service: BookService):
+        self.book_service = book_service
 
     def register_book(self):
         if request.method == 'POST':

@@ -21,7 +21,7 @@ class LoanService:
         if not book:
             raise ValueError("livro nao encontrado")
 
-        if not self.loan_repository.is_book_available(book_id):
+        if not self.book_repository.is_book_available(book_id):
             raise ValueError("livro não esta disponível para emprestimo")
         
         expected_return_date = date.today() + timedelta(days=days_to_return)
@@ -34,7 +34,7 @@ class LoanService:
         return loan_id
 
     def check_book_availability(self, book_id: int):
-        is_available = self.loan_repository.is_book_available(book_id)
+        is_available = self.book_repository.is_book_available(book_id)
         
         result = {
             'available': is_available,
