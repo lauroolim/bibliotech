@@ -88,7 +88,7 @@ class ProfileController:
             return redirect(url_for('user.profile'))
         
         try:
-            self.user_service.change_user_password(
+            self.user_service.change_password(
                 user_id=current_user.id,
                 current_password=current_password,
                 new_password=new_password

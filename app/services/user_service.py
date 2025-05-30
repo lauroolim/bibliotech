@@ -81,7 +81,7 @@ class UserService:
         if not user:
             raise ValueError("user não encontrado")
         
-        if not self.verify_password(current_password, user.password):
+        if not verify_password(current_password, user.password):
             raise ValueError("senha atual incorreta")
         
         hashed_new_password = hash_password(new_password)

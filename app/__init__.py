@@ -11,6 +11,8 @@ from app.repositories.loan_repository import PSQLLoanRepository
 
 from app.services.loan_service import LoanService
 from app.services.user_service import UserService
+from app.services.auth_service import AuthService
+from app.services.book_service import BookService
 
 from app.controllers.auth_controller import AuthController
 from app.controllers.user_controller import UserController
@@ -45,9 +47,10 @@ def create_app(config_name='development'):
 
     loan_service = LoanService(loan_repository, user_repository, book_repository)
     user_service = UserService(user_repository)
+    auth_service = AuthService(user_repository, employee_repository)
 
     book_controller = BookController(book_repository, loan_repository)
-    auth_controller = AuthController(user_repository, employee_repository)
+    auth_controller = AuthController(auth_service)
     user_controller = UserController(user_repository)
     admin_controller = AdminController(loan_service)  
     loan_controller = LoanController(loan_repository, user_repository, book_repository)

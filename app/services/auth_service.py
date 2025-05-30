@@ -12,12 +12,12 @@ class AuthService:
 
     def login_user(self, email, password):
         user = self.user_repository.fetch_user_by_email(email)
-        if not user or not self.verify_password(password, user.password): 
+        if not user or not verify_password(password, user.password): 
             return None
         return user
 
     def login_employee(self, cpf, password):
         employee = self.employee_repository.fetch_employee_by_cpf(cpf)
-        if not employee or not self.verify_password(password, employee.password):
+        if not employee or not verify_password(password, hashed_new_password=employee.password):
             return None
         return employee

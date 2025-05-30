@@ -1,14 +1,10 @@
 from app.services.auth_service import AuthService
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
-from app.repositories.user_repository import IUserRepository
-from app.repositories.employee_repository import IEmployeeRepository
 
 class AuthController:
-    def __init__(self, user_repository: IUserRepository, employee_repository: IEmployeeRepository):
-        self.user_repository = user_repository
-        self.employee_repository = employee_repository
-        self.auth_service = AuthService(user_repository, employee_repository)
+    def __init__(self, auth_service: AuthService):
+        self.auth_service = auth_service
 
     def login_user(self):
         if current_user.is_authenticated:

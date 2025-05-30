@@ -36,6 +36,9 @@ class IUserRepository(ABC):
     @abstractmethod
     def fetch_user_active_loans(self, user_id: int, limit: int = 5) -> list:
         pass
+    @abstractmethod
+    def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
+        pass
 class PSQLUserRepository(IUserRepository):
     def __init__(self, db):
         self.db = db
@@ -241,3 +244,16 @@ class PSQLUserRepository(IUserRepository):
         except Exception as e:
             logger.error(f"falha no repository ao buscar emprestimos ativos do user {user_id}: {str(e)}")
             return []
+    
+    def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
+        query = "UPDATE users SET password = ? WHERE id = ?"
+        params = [hashed_new_password, user_id]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            affected_rows = cursor.rowcount
+            cursor.close()
+            return affected_rows > 0
+        except Exception as e:
+            logger.error(f"falha ao inser nova senha do user {user_id} no banco: {str(e)}")
+            return False
