@@ -1,12 +1,10 @@
 from app.services.user_service import UserService
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
-from app.repositories.user_repository import IUserRepository
 
 class UserController:
-    def __init__(self, user_repository: IUserRepository):
-        self.user_repository = user_repository
-        self.user_service = UserService(user_repository)
+    def __init__(self, user_service: UserService):
+        self.user_service = user_service
 
     def register_user(self):
         if request.method == 'POST':

@@ -52,7 +52,7 @@ def create_app(config_name='development'):
 
     book_controller = BookController(book_service)
     auth_controller = AuthController(auth_service)
-    user_controller = UserController(user_repository)
+    user_controller = UserController(user_service)
     admin_controller = AdminController(loan_service)  
     loan_controller = LoanController(loan_service)
     profile_controller = ProfileController(user_service, loan_service)
