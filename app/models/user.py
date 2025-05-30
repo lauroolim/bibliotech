@@ -9,10 +9,20 @@ class User(UserMixin):
         self.password = password
         self.phone = phone
         self.created_at = created_at
-        self.is_active = is_active
+        self._is_active = is_active if is_active is not None else True  # Usar atributo privado
 
     def get_id(self):
         return f"u_{self.id}"
+    
+    @property
+    def is_active(self):
+        """Property para Flask-Login"""
+        return self._is_active
+    
+    @is_active.setter
+    def is_active(self, value):
+        """Setter para permitir modificação"""
+        self._is_active = value
         
     @property
     def is_admin(self):

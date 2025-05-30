@@ -26,7 +26,7 @@ class LoanService:
         
         expected_return_date = date.today() + timedelta(days=days_to_return)
 
-        loan_id = self.loan_repository.create_loan(user_id, book_id, employee_id, expected_return_date)
+        loan_id = self.loan_repository.insert_loan(user_id, book_id, employee_id, expected_return_date)
         if not loan_id:
             raise ValueError("erro ao criar emprestimo")
 
@@ -110,7 +110,7 @@ class LoanService:
         return self.loan_repository.fetch_overdue_loans()
 
     def get_dashboard_stats(self):
-        return self.loan_repository.get_loan_stats()
+        return self.loan_repository.fetch_loan_stats()
 
     def search_user(self, email):
 

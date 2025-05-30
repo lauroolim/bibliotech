@@ -5,7 +5,6 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row">
-        <!-- Sidebar com ações -->
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
@@ -16,7 +15,7 @@
                     <p class="text-muted">{{ current_user.email }}</p>
                     
                     <div class="d-grid gap-2 mt-4">
-                        <a href="{{ url_for('loan.my_loans') }}" class="btn btn-primary">
+                        <a href="" class="btn btn-primary">
                             <i class="bi bi-book"></i> Meus Empréstimos
                             {% if active_loans > 0 %}
                                 <span class="badge bg-light text-primary ms-2">{{ active_loans }}</span>
@@ -38,7 +37,6 @@
                 </div>
             </div>
 
-            <!-- Estatísticas -->
             <div class="card mt-4 shadow-sm">
                 <div class="card-body">
                     <h6 class="card-title text-muted mb-3">Estatísticas</h6>
@@ -66,14 +64,12 @@
             </div>
         </div>
 
-        <!-- Conteúdo principal -->
         <div class="col-md-8">
-            <!-- Empréstimos Ativos -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Empréstimos Ativos</h5>
-                        <a href="{{ url_for('loan.my_loans') }}" class="btn btn-sm btn-link">Ver todos</a>
+                        <a href="" class="btn btn-sm btn-link">Ver todos</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -86,7 +82,7 @@
                                         Devolução até: {{ loan.expected_return_date.strftime('%d/%m/%Y') }}
                                     </small>
                                 </div>
-                                <a href="{{ url_for('loan.view_loan', loan_id=loan.id) }}" 
+                                <a href="" 
                                    class="btn btn-sm btn-outline-primary">
                                     Detalhes
                                 </a>
@@ -100,7 +96,6 @@
                 </div>
             </div>
 
-            <!-- Histórico Recente -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Histórico Recente</h5>
@@ -146,7 +141,6 @@
     </div>
 </div>
 
-<!-- Modal Editar Perfil -->
 <div class="modal fade" id="editProfileModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -191,7 +185,6 @@
     </div>
 </div>
 
-<!-- Modal Alterar Senha -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

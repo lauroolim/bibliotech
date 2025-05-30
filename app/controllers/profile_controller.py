@@ -1,0 +1,129 @@
+from app.services.user_service import UserService
+from app.services.loan_service import LoanService
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import current_user, logout_user
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ProfileController:
+    def __init__(self, user_service: UserService, loan_service: LoanService):
+        self.user_service = user_service
+        self.loan_service = loan_service
+
+    def show_profile(self):
+        try:
+            profile_data = self.user_service.get_user_profile_data(current_user.id)
+            active_loans_list = self.user_service.get_user_active_loans(current_user.id)
+            
+            formatted_loans = []
+            for loan_data in active_loans_list:
+                formatted_loan = {
+                    'id': loan_data['id'],
+                    'expected_return_date': loan_data['expected_return_date'],
+                    'created_at': loan_data['created_at'],
+                    'book': {'title': loan_data['book_title']}
+                }
+                formatted_loans.append(formatted_loan)
+            
+            return render_template('user/profile.html', 
+                                 user=profile_data['user'],                    
+                                 active_loans=profile_data['active_loans'],   
+                                 overdue_loans=profile_data['overdue_loans'], 
+                                 total_loans=profile_data['total_loans'],    
+                                 active_loans_list=formatted_loans,           
+                                 recent_loans=[])                           
+                                 
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return redirect(url_for('index'))
+        except Exception as e:
+            logger.error(f"Erro ao carregar perfil: {str(e)}")
+            flash('Erro ao carregar perfil', 'danger')
+            return redirect(url_for('index'))
+
+    def update_profile(self):
+        if request.method != 'POST':
+            return redirect(url_for('user.profile'))
+        
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        
+        try:
+            self.user_service.update_user_profile(
+                user_id=current_user.id,
+                username=username,
+                email=email,
+                phone=phone
+            )
+            flash('Perfil atualizado com sucesso!', 'success')
+            
+        except ValueError as e:
+            flash(str(e), 'danger')
+        except Exception as e:
+            logger.error(f"Erro ao atualizar perfil: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+        
+        return redirect(url_for('user.profile'))
+
+    def change_password(self):
+        if request.method != 'POST':
+            return redirect(url_for('user.profile'))
+        
+        current_password = request.form.get('current_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        if not all([current_password, new_password, confirm_password]):
+            flash('Todos os campos são obrigatórios', 'danger')
+            return redirect(url_for('user.profile'))
+        
+        if new_password != confirm_password:
+            flash('Nova senha e confirmação não coincidem', 'danger')
+            return redirect(url_for('user.profile'))
+        
+        if len(new_password) < 6:
+            flash('Nova senha deve ter pelo menos 6 caracteres', 'danger')
+            return redirect(url_for('user.profile'))
+        
+        try:
+            self.user_service.change_user_password(
+                user_id=current_user.id,
+                current_password=current_password,
+                new_password=new_password
+            )
+            flash('Senha alterada com sucesso!', 'success')
+            
+        except ValueError as e:
+            flash(str(e), 'danger')
+        except Exception as e:
+            logger.error(f"falha ao alterar senha: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+        
+        return redirect(url_for('user.profile'))
+
+    def deactivate_account(self):
+        if request.method != 'POST':
+            return redirect(url_for('user.profile'))
+        
+        password = request.form.get('password', '')
+        
+        if not password:
+            flash('A senha é obrigatória para desativar conta', 'danger')
+            return redirect(url_for('user.profile'))
+        
+        try:
+            self.user_service.deactivate_user(current_user.id, password)
+            
+            flash('Conta desativada com sucesso', 'info')
+            logout_user()
+            return redirect(url_for('index'))
+            
+        except ValueError as e:
+            flash(str(e), 'danger')
+        except Exception as e:
+            logger.error(f"Erro ao desativar conta: {str(e)}")
+            flash('Erro interno. Tente novamente.', 'danger')
+        
+        return redirect(url_for('user.profile'))

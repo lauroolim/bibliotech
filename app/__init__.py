@@ -10,12 +10,14 @@ from app.repositories.book_repository import PSQLBookRepository
 from app.repositories.loan_repository import PSQLLoanRepository
 
 from app.services.loan_service import LoanService
+from app.services.user_service import UserService
 
 from app.controllers.auth_controller import AuthController
 from app.controllers.user_controller import UserController
 from app.controllers.admin_controller import AdminController
 from app.controllers.book_controller import BookController
 from app.controllers.loan_controller import LoanController
+from app.controllers.profile_controller import ProfileController
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login_user'  
@@ -42,12 +44,14 @@ def create_app(config_name='development'):
     loan_repository = PSQLLoanRepository(Database)
 
     loan_service = LoanService(loan_repository, user_repository, book_repository)
+    user_service = UserService(user_repository)
 
     book_controller = BookController(book_repository, loan_repository)
     auth_controller = AuthController(user_repository, employee_repository)
     user_controller = UserController(user_repository)
     admin_controller = AdminController(loan_service)  
     loan_controller = LoanController(loan_repository, user_repository, book_repository)
+    profile_controller = ProfileController(user_service, loan_service)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -74,6 +78,10 @@ def create_app(config_name='development'):
     from app.routes.book_routes import create_book_blueprint
     book_bp = create_book_blueprint(book_controller)
     app.register_blueprint(book_bp)
+
+    from app.routes.profile_routes import create_profile_blueprint
+    profile_bp = create_profile_blueprint(profile_controller)
+    app.register_blueprint(profile_bp)
 
     @app.route('/')
     def index():
