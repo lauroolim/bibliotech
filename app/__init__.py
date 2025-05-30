@@ -53,7 +53,7 @@ def create_app(config_name='development'):
     auth_controller = AuthController(auth_service)
     user_controller = UserController(user_repository)
     admin_controller = AdminController(loan_service)  
-    loan_controller = LoanController(loan_repository, user_repository, book_repository)
+    loan_controller = LoanController(loan_service)
     profile_controller = ProfileController(user_service, loan_service)
 
     @login_manager.user_loader
