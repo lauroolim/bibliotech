@@ -1,13 +1,11 @@
 from app.repositories.book_repository import IBookRepository
-from app.repositories.loan_repository import ILoanRepository
 import logging
 
 logger = logging.getLogger(__name__)
 
 class BookService:
-    def __init__(self, book_repository: IBookRepository, loan_repository: ILoanRepository = None):
+    def __init__(self, book_repository: IBookRepository):
         self.book_repository = book_repository
-        self.loan_repository = loan_repository
 
     def register_book(self, title, isbn, publish_year=None, author_ids=None):
         if not title or not title.strip():
@@ -40,14 +38,13 @@ class BookService:
     def get_all_authors(self):
         return self.book_repository.fetch_all_authors()
 
-    def list_books(self, page=1, per_page=10):
-        books = self.book_repository.fetch_all_books(page, per_page)
-        total_count = self.book_repository.count_books() 
+    def list_books(self, page=1, per_page=10, search=None):
+        books = self.book_repository.fetch_all_books(page, per_page, search)
+        total_count = self.book_repository.count_books(search) 
         total_pages = (total_count + per_page - 1) // per_page
 
-        if self.loan_repository:
-            for book in books:
-                book.is_available = self.loan_repository.is_book_available(book.id)
+        for book in books:
+            book.is_available = self.book_repository.is_book_available(book.id)
         
         return {
             'books': books,
@@ -79,3 +76,19 @@ class BookService:
             except Exception as e:
                 logger.error(f"erro inesperado ao associar autor {author_id}: {str(e)}")
                 raise ValueError(f"erro ao associar autor {author_id} ao livro")
+        
+    def search_by_isbn(self, isbn):
+        if not isbn or not isbn.strip():
+            raise ValueError("ISBN é obrigatório")
+        
+        book = self.book_repository.fetch_book_by_isbn(isbn.strip())
+        if not book:
+            raise ValueError(f"livro com ISBN {isbn} não encontrado")
+        
+        book.authors = self.book_repository._fetch_authors_by_book_id(book.id)
+    
+        book.is_available = self.book_repository.is_book_available(book.id)
+        book.available_copies = 1 if book.is_available else 0
+        book.total_copies = 1
+        
+        return book

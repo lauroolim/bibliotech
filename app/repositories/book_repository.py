@@ -50,8 +50,8 @@ class PSQLBookRepository(IBookRepository):
         self.db = db
 
     def insert_book(self, title, isbn, publish_year=None):
-        insert_query = "INSERT INTO bibliotech.books (title, isbn, publish_year) VALUES (?, ?, ?)"
-        select_query = "SELECT id FROM bibliotech.books WHERE isbn = ?"
+        insert_query = "INSERT INTO books (title, isbn, publish_year) VALUES (?, ?, ?)"
+        select_query = "SELECT id FROM books WHERE isbn = ?"
         insert_params = [title, isbn, publish_year]
 
         try:
@@ -60,7 +60,7 @@ class PSQLBookRepository(IBookRepository):
             result = cursor.fetchone()
             
             if result:
-                logger.info(f"Livro inserido com sucesso. ID: {result[0]}")
+                #logger.info(f"Livro inserido com sucesso. ID: {result[0]}")
                 return result[0]
             
             logger.error("Livro inserido mas ID não encontrado")
@@ -70,7 +70,7 @@ class PSQLBookRepository(IBookRepository):
             return None
 
     def fetch_book_by_id(self, book_id):
-        query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books WHERE id = ?"
+        query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE id = ?"
         params = [book_id]
 
         try:
@@ -93,7 +93,7 @@ class PSQLBookRepository(IBookRepository):
             return None
 
     def fetch_book_by_isbn(self, isbn):
-        query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books WHERE isbn = ?"
+        query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE isbn = ?"
         params = [isbn]
 
         try:
@@ -113,10 +113,18 @@ class PSQLBookRepository(IBookRepository):
             logger.error(f"Falha ao buscar livro por ISBN: {str(e)}")
             return None
 
-    def fetch_all_books(self, page, per_page):
+    def fetch_all_books(self, page, per_page, search=None):
         offset = (page - 1) * per_page
-        query = "SELECT id, title, isbn, publish_year, created_at FROM bibliotech.books ORDER BY id LIMIT ? OFFSET ?"
+        query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
         params = [per_page, offset]
+
+        if search:
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE title LIKE ? OR isbn LIKE ? ORDER BY id LIMIT ? OFFSET ?"
+            search_param = f"%{search}%"
+            params = [search_param, search_param, per_page, offset]
+        else:
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
+            params = [per_page, offset]
 
         try:
             cursor = self.db.execute_query(query, params)
@@ -138,19 +146,25 @@ class PSQLBookRepository(IBookRepository):
             logger.error(f"Falha ao buscar todos os livros: {str(e)}")
             return []
 
-    def count_books(self):
-        query = "SELECT COUNT(*) FROM bibliotech.books"
+    def count_books(self, search=None):
+        if search:
+            query = "SELECT COUNT(*) FROM books WHERE title LIKE ? OR isbn LIKE ?"
+            search_param = f"%{search}%"
+            params = [search_param, search_param]
+        else:
+            query = "SELECT COUNT(*) FROM books"
+            params = []
         
         try:
-            cursor = self.db.execute_query(query)
+            cursor = self.db.execute_query(query, params)
             result = cursor.fetchone()
             return result[0] if result else 0
         except Exception as e:
             logger.error(f"Falha ao contar total de livros: {str(e)}")
             return 0
-
+            
     def fetch_all_authors(self):
-        query = "SELECT id, full_name FROM bibliotech.authors ORDER BY full_name"
+        query = "SELECT id, full_name FROM authors ORDER BY full_name"
         
         try:
             cursor = self.db.execute_query(query)
@@ -161,7 +175,7 @@ class PSQLBookRepository(IBookRepository):
             return []
     
     def insert_author(self, full_name):
-        query = "INSERT INTO bibliotech.authors (full_name) VALUES (?)"
+        query = "INSERT INTO authors (full_name) VALUES (?)"
         params = [full_name]
 
         try:
@@ -172,7 +186,7 @@ class PSQLBookRepository(IBookRepository):
             return False
 
     def fetch_author_by_id(self, author_id):
-        query = "SELECT id, full_name FROM bibliotech.authors WHERE id = ?"
+        query = "SELECT id, full_name FROM authors WHERE id = ?"
         params = [author_id]
 
         try:
@@ -184,8 +198,7 @@ class PSQLBookRepository(IBookRepository):
             return None
     
     def associate_book_author(self, book_id, author_id):
-        # Verificar se associação já existe
-        check_query = "SELECT COUNT(*) FROM bibliotech.books_authors WHERE book_id = ? AND author_id = ?"
+        check_query = "SELECT COUNT(*) FROM books_authors WHERE book_id = ? AND author_id = ?"
         
         try:
             cursor = self.db.execute_query(check_query, [book_id, author_id])
@@ -197,12 +210,11 @@ class PSQLBookRepository(IBookRepository):
         except Exception as e:
             logger.error(f"Erro ao verificar associação: {str(e)}")
 
-        # Inserir nova associação
-        insert_query = "INSERT INTO bibliotech.books_authors (book_id, author_id) VALUES (?, ?)"
+        insert_query = "INSERT INTO books_authors (book_id, author_id) VALUES (?, ?)"
         
         try:
             self.db.execute_query(insert_query, [book_id, author_id])
-            logger.info(f"Associação criada: livro {book_id} com autor {author_id}")
+            #logger.info(f"Associação criada: livro {book_id} com autor {author_id}")
             return True
         except Exception as e:
             logger.error(f"Erro ao associar livro {book_id} e autor {author_id}: {str(e)}")
@@ -211,8 +223,8 @@ class PSQLBookRepository(IBookRepository):
     def _fetch_authors_by_book_id(self, book_id):
         query = """
         SELECT a.id, a.full_name 
-        FROM bibliotech.authors a
-        INNER JOIN bibliotech.books_authors ba ON a.id = ba.author_id
+        FROM authors a
+        INNER JOIN books_authors ba ON a.id = ba.author_id
         WHERE ba.book_id = ?
         ORDER BY a.full_name
         """
@@ -227,7 +239,7 @@ class PSQLBookRepository(IBookRepository):
             return []
 
     def is_book_available(self, book_id):
-        query = "SELECT COUNT(*) FROM bibliotech.loans WHERE book_id = ? AND returned_at IS NULL"
+        query = "SELECT COUNT(*) FROM loans WHERE book_id = ? AND returned_at IS NULL"
         params = [book_id]
 
         try:

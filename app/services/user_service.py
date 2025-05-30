@@ -2,7 +2,9 @@ from app.repositories.user_repository import IUserRepository
 from app.models.user import User
 from app.models.employee import Employee
 from app.utils.hash_password import hash_password
-
+from app.utils.hash_password import verify_password
+import logging
+logger = logging.getLogger(__name__)
 class UserService:
     def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
@@ -16,10 +18,9 @@ class UserService:
         if not user:
             raise ValueError("falha no service de cadastro de usuario")
 
-    def list_users(self, page=1, per_page=10):
-        users = self.user_repository.fetch_all_users(page, per_page)
-        
-        total_count = self.user_repository.count_users()
+    def list_users(self, page=1, per_page=10, search=None):
+        users = self.user_repository.fetch_all_users(page, per_page, search)
+        total_count = self.user_repository.count_users(search)  
         total_pages = (total_count + per_page - 1) // per_page
         
         return {
@@ -32,18 +33,64 @@ class UserService:
             'has_prev': page > 1
         }
     
-    def delete_user(self, user_id):
+    def deactivate_user(self, user_id):
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
-            raise ValueError("usuario não encontrado")
+            raise ValueError("user não encontrado")
         
-        self.user_repository.delete_user(user_id)
+        self.user_repository.soft_delete_user(user_id)
         return True
 
     def update_user(self, user_id, username, email):
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
-            raise ValueError("usuario não encontrado")
+            raise ValueError("user não encontrado")
         
         self.user_repository.update_user(user_id, username, email)
         return True
+
+    def get_user_active_loans(self, user_id):
+        user = self.user_repository.fetch_user_by_id(user_id)
+        if not user:
+            raise ValueError("user não encontrado")
+        
+        return self.user_repository.fetch_user_active_loans(user_id, 5)
+
+    def get_user_profile_data(self, user_id: int):
+        try:
+            user = self.user_repository.fetch_user_by_id(user_id)
+            if not user:
+                raise ValueError("Usuário não encontrado")
+            
+            stats = self.user_repository.fetch_user_loan_stats(user_id)
+            logger.info(f"Stats retornadas do repository: {stats}")
+            
+            return {
+                'user': user,
+                'active_loans': stats.get('active', 0),
+                'overdue_loans': stats.get('overdue', 0),  
+                'total_loans': stats.get('total', 0)
+            }
+        except Exception as e:
+            logger.error(f"Erro no user_service.get_user_profile_data: {str(e)}")
+            raise
+
+
+    def change_password(self, user_id, current_password, new_password):
+        user = self.user_repository.fetch_user_by_id(user_id)
+        if not user:
+            raise ValueError("user não encontrado")
+        
+        if not verify_password(current_password, user.password):
+            raise ValueError("senha atual incorreta")
+        
+        hashed_new_password = hash_password(new_password)
+        self.user_repository.update_user_password(user_id, hashed_new_password)
+        return True
+    
+    def get_user_by_id(self, user_id):
+        user = self.user_repository.fetch_user_by_id(user_id)
+        if not user:
+            raise ValueError("user não encontrado")
+        
+        return user

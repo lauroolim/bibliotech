@@ -1,7 +1,4 @@
 from app.services.loan_service import LoanService
-from app.repositories.loan_repository import ILoanRepository
-from app.repositories.user_repository import IUserRepository  
-from app.repositories.book_repository import IBookRepository
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user
 from datetime import date, timedelta
@@ -10,11 +7,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class LoanController:
-    def __init__(self, loan_repository: ILoanRepository, user_repository: IUserRepository, book_repository: IBookRepository):
-        self.loan_repository = loan_repository
-        self.user_repository = user_repository
-        self.book_repository = book_repository
-        self.loan_service = LoanService(loan_repository, user_repository, book_repository)
+    def __init__(self, loan_service: LoanService):
+        self.loan_service = loan_service
 
     def list_loans(self):
         page = request.args.get('page', 1, type=int)
@@ -31,7 +25,6 @@ class LoanController:
                 status=status if status else None,
                 search=search if search else None
             )
-            
             #logger.debug(f"Resultado: {len(pagination['loans'])} empréstimos encontrados")
             #logger.debug(f"Paginação: {pagination}")
             

@@ -1,12 +1,8 @@
 from app.services.book_service import BookService
 from flask import render_template, request, redirect, url_for, flash
-from app.repositories.book_repository import IBookRepository
-from app.repositories.loan_repository import ILoanRepository
 class BookController:
-    def __init__(self, book_repository: IBookRepository, loan_repository: ILoanRepository = None):
-        self.book_repository = book_repository
-        self.loan_repository = loan_repository
-        self.book_service = BookService(book_repository, loan_repository)
+    def __init__(self, book_service: BookService):
+        self.book_service = book_service
 
     def register_book(self):
         if request.method == 'POST':
@@ -49,10 +45,32 @@ class BookController:
     def list_books(self):
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int) 
-        
+        search = request.args.get('search', '', type=str)
+
         try:
-            pagination = self.book_service.list_books(page, per_page)
+            pagination = self.book_service.list_books(page, per_page, search)
             return render_template('admin/list_books.html', **pagination)
         except ValueError as e:
             flash(str(e), 'danger')
             return redirect(url_for('admin.dashboard'))
+
+    def search_book_by_isbn(self, isbn):
+        try:
+            book = self.book_service.search_by_isbn(isbn)
+            return book
+        except ValueError as e:
+            raise ValueError(str(e))
+
+    def get_book_by_id(self, book_id):
+        try:
+            book = self.book_repository.fetch_book_by_id(book_id)
+            if not book:
+                raise ValueError("Livro não encontrado")
+                
+            if self.loan_repository:
+                book.is_available = self.loan_repository.is_book_available(book.id)
+                book.available_copies = 1 if book.is_available else 0
+                book.total_copies = 1
+            return book
+        except Exception as e:
+            raise ValueError(str(e))

@@ -21,12 +21,12 @@ class LoanService:
         if not book:
             raise ValueError("livro nao encontrado")
 
-        if not self.loan_repository.is_book_available(book_id):
+        if not self.book_repository.is_book_available(book_id):
             raise ValueError("livro não esta disponível para emprestimo")
         
         expected_return_date = date.today() + timedelta(days=days_to_return)
 
-        loan_id = self.loan_repository.create_loan(user_id, book_id, employee_id, expected_return_date)
+        loan_id = self.loan_repository.insert_loan(user_id, book_id, employee_id, expected_return_date)
         if not loan_id:
             raise ValueError("erro ao criar emprestimo")
 
@@ -34,7 +34,7 @@ class LoanService:
         return loan_id
 
     def check_book_availability(self, book_id: int):
-        is_available = self.loan_repository.is_book_available(book_id)
+        is_available = self.book_repository.is_book_available(book_id)
         
         result = {
             'available': is_available,
@@ -110,7 +110,7 @@ class LoanService:
         return self.loan_repository.fetch_overdue_loans()
 
     def get_dashboard_stats(self):
-        return self.loan_repository.get_loan_stats()
+        return self.loan_repository.fetch_loan_stats()
 
     def search_user(self, email):
 

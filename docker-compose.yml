@@ -15,10 +15,10 @@ services:
   app:
     container_name: bibliotech_app
     build: .
-    volumes:
-      - .:/app
     env_file:
       - .env
+    volumes:
+      - .:/app
     depends_on:
       - db
     networks:

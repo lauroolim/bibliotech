@@ -10,15 +10,11 @@ logger = logging.getLogger(__name__)
 
 class ILoanRepository(ABC):
     @abstractmethod
-    def create_loan(self, user_id: int, book_id: int, employee_id: int, expected_return_date: date) -> int:
+    def insert_loan(self, user_id: int, book_id: int, employee_id: int, expected_return_date: date) -> int:
         pass
 
     @abstractmethod
     def fetch_loan_by_id(self, loan_id: int) -> Loan:
-        pass
-
-    @abstractmethod
-    def is_book_available(self, book_id: int) -> bool:
         pass
 
     @abstractmethod
@@ -38,15 +34,15 @@ class ILoanRepository(ABC):
         pass
 
     @abstractmethod
-    def get_loan_stats(self) -> dict:
+    def fetch_loan_stats(self) -> dict:
         pass
 
 class PSQLLoanRepository(ILoanRepository):
     def __init__(self, db):
         self.db = db
 
-    def create_loan(self, user_id, book_id, employee_id, expected_return_date: date):
-        query = "INSERT INTO bibliotech.loans (user_id, book_id, employee_id, expected_return_date, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id"
+    def insert_loan(self, user_id, book_id, employee_id, expected_return_date: date):
+        query = "INSERT INTO loans (user_id, book_id, employee_id, expected_return_date, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id"
         params = [user_id, book_id, employee_id, expected_return_date, datetime.now()]
 
         try:
@@ -63,21 +59,6 @@ class PSQLLoanRepository(ILoanRepository):
             logger.error(f"Erro ao criar empréstimo: {str(e)}")
             return None
 
-    def is_book_available(self, book_id):
-        query = "SELECT COUNT(*) FROM bibliotech.loans WHERE book_id = ? AND returned_at IS NULL"
-        params = [book_id]
-
-        try:
-            cursor = self.db.execute_query(query, params)
-            result = cursor.fetchone()
-            cursor.close()
-            
-            count = result[0] if result else 0
-            return count == 0  
-        except Exception as e:
-            logger.error(f"falha ao verificar disponibilidade do livro {book_id}: {str(e)}")
-            return False
-
     def fetch_loan_by_id(self, loan_id):
         query = """
         SELECT l.id, l.created_at, l.expected_return_date, l.returned_at, 
@@ -85,10 +66,10 @@ class PSQLLoanRepository(ILoanRepository):
             u.username, u.email,
             b.title, b.isbn,
             e.username as employee_name, e.email as employee_email, e.cpf as employee_cpf
-        FROM bibliotech.loans l
-        LEFT JOIN bibliotech.users u ON l.user_id = u.id
-        LEFT JOIN bibliotech.books b ON l.book_id = b.id
-        LEFT JOIN bibliotech.employees e ON l.employee_id = e.id
+        FROM loans l
+        LEFT JOIN users u ON l.user_id = u.id
+        LEFT JOIN books b ON l.book_id = b.id
+        LEFT JOIN employees e ON l.employee_id = e.id
         WHERE l.id = ?
         """
         params = [loan_id]
@@ -146,10 +127,10 @@ class PSQLLoanRepository(ILoanRepository):
             u.username, u.email,
             b.title, b.isbn,
             e.username as employee_name, e.email as employee_email, e.cpf as employee_cpf
-        FROM bibliotech.loans l
-        LEFT JOIN bibliotech.users u ON l.user_id = u.id
-        LEFT JOIN bibliotech.books b ON l.book_id = b.id
-        LEFT JOIN bibliotech.employees e ON l.employee_id = e.id
+        FROM loans l
+        LEFT JOIN users u ON l.user_id = u.id
+        LEFT JOIN books b ON l.book_id = b.id
+        LEFT JOIN employees e ON l.employee_id = e.id
         WHERE 1=1
         """
         
@@ -218,7 +199,7 @@ class PSQLLoanRepository(ILoanRepository):
             return []
 
     def update_loan_return(self, loan_id: int, return_date: date, notes: str = None):
-        query = "UPDATE bibliotech.loans SET returned_at = ? WHERE id = ?"
+        query = "UPDATE loans SET returned_at = ? WHERE id = ?"
         params = [return_date, loan_id]
 
         try:
@@ -229,7 +210,7 @@ class PSQLLoanRepository(ILoanRepository):
             return False
 
     def count_loans(self, status: str = None):
-        base_query = "SELECT COUNT(*) FROM bibliotech.loans l WHERE 1=1"
+        base_query = "SELECT COUNT(*) FROM loans l WHERE 1=1"
         params = []
 
         if status:
@@ -257,9 +238,9 @@ class PSQLLoanRepository(ILoanRepository):
                l.user_id, l.book_id, l.employee_id,
                u.username, u.email,
                b.title, b.isbn
-        FROM bibliotech.loans l
-        LEFT JOIN bibliotech.users u ON l.user_id = u.id
-        LEFT JOIN bibliotech.books b ON l.book_id = b.id
+        FROM loans l
+        LEFT JOIN users u ON l.user_id = u.id
+        LEFT JOIN books b ON l.book_id = b.id
         WHERE l.returned_at IS NULL AND l.expected_return_date < ?
         ORDER BY l.expected_return_date
         """
@@ -291,14 +272,14 @@ class PSQLLoanRepository(ILoanRepository):
             logger.error(f"falha ao buscar empréstimos em atraso: {str(e)}")
             return []
 
-    def get_loan_stats(self):
+    def fetch_loan_stats(self):
         today = date.today()
         
         queries = {
-            'active_loans': "SELECT COUNT(*) FROM bibliotech.loans WHERE returned_at IS NULL",
-            'overdue_loans': "SELECT COUNT(*) FROM bibliotech.loans WHERE returned_at IS NULL AND expected_return_date < ?",
-            'returned_today': "SELECT COUNT(*) FROM bibliotech.loans WHERE DATE(returned_at) = ?",
-            'monthly_loans': "SELECT COUNT(*) FROM bibliotech.loans WHERE EXTRACT(MONTH FROM created_at) = ? AND EXTRACT(YEAR FROM created_at) = ?"
+            'active_loans': "SELECT COUNT(*) FROM loans WHERE returned_at IS NULL",
+            'overdue_loans': "SELECT COUNT(*) FROM loans WHERE returned_at IS NULL AND expected_return_date < ?",
+            'returned_today': "SELECT COUNT(*) FROM loans WHERE DATE(returned_at) = ?",
+            'monthly_loans': "SELECT COUNT(*) FROM loans WHERE EXTRACT(MONTH FROM created_at) = ? AND EXTRACT(YEAR FROM created_at) = ?"
         }
 
         stats = {}
