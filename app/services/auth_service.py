@@ -18,6 +18,6 @@ class AuthService:
 
     def login_employee(self, cpf, password):
         employee = self.employee_repository.fetch_employee_by_cpf(cpf)
-        if not employee or not verify_password(password, hashed_new_password=employee.password):
+        if not employee or not verify_password(password, employee.password):
             return None
         return employee

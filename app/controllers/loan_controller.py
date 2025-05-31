@@ -3,7 +3,9 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user
 from datetime import date, timedelta
 import logging
-
+from datetime import timezone
+import pytz 
+from datetime import date, timedelta, datetime
 logger = logging.getLogger(__name__)
 
 class LoanController:
@@ -16,7 +18,7 @@ class LoanController:
         status = request.args.get('status', '')
         search = request.args.get('search', '')
 
-        logger.debug(f"Listando empréstimos - page: {page}, per_page: {per_page}, status: '{status}', search: '{search}'")
+        #logger.debug(f"Listando empréstimos - page: {page}, per_page: {per_page}, status: '{status}', search: '{search}'")
 
         try:
             pagination = self.loan_service.list_loans(
@@ -85,8 +87,7 @@ class LoanController:
 
         if request.method == 'POST':
             try:
-                return_date_str = request.form['return_date']
-                return_date = date.fromisoformat(return_date_str)
+                return_date = self._get_brazil_date()
                 notes = request.form.get('return_notes', '')
                 
                 result = self.loan_service.return_loan(
@@ -101,15 +102,16 @@ class LoanController:
                 
                 flash(message, 'success')
                 return redirect(url_for('admin.list_loans'))
-                
+            
+                today = date.today().isoformat()
             except ValueError as e:
                 flash(str(e), 'danger')
             except Exception as e:
                 logger.error(f"falha ao processar devolução: {str(e)}")
                 flash('Erro interno, tente novamente', 'danger')
 
-        today = date.today().isoformat()
-        return render_template('admin/return_loan.html', loan=loan, today=today)
+        today_datetime = self._get_brazil_datetime()
+        return render_template('admin/return_loan.html', loan=loan, today=today_datetime)
 
     def view_loan(self, loan_id):
         try:
@@ -165,3 +167,11 @@ class LoanController:
             logger.error(f"falha ao buscar emprestimos em atraso: {str(e)}")
             flash('Erro ao carregar empréstimos em atraso', 'danger')
             return redirect(url_for('admin.dashboard'))
+
+    def _get_brazil_date(self):
+        brazil_tz = pytz.timezone('America/Sao_Paulo')
+        return datetime.now(brazil_tz).date()
+
+    def _get_brazil_datetime(self):
+        brazil_offset = timezone(timedelta(hours=-3))
+        return datetime.now(brazil_offset)

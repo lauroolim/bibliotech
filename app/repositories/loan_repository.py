@@ -7,7 +7,6 @@ import logging
 from datetime import date, datetime, timedelta
 
 logger = logging.getLogger(__name__)
-
 class ILoanRepository(ABC):
     @abstractmethod
     def insert_loan(self, user_id: int, book_id: int, employee_id: int, expected_return_date: date) -> int:

@@ -12,7 +12,7 @@ class LoanService:
         self.user_repository = user_repository
         self.book_repository = book_repository
 
-    def create_loan(self, user_id: int, book_id: int, employee_id: int, days_to_return: int = 14):
+    def create_loan(self, user_id, book_id, employee_id, days_to_return = 14):
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
             raise ValueError("Usuario nao encontrado")
