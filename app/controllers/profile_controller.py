@@ -63,7 +63,7 @@ class ProfileController:
             flash(str(e), 'danger')
         except Exception as e:
             logger.error(f"Erro ao atualizar perfil: {str(e)}")
-            flash('Erro interno. Tente novamente.', 'danger')
+            flash('Erro interno, tente novamente', 'danger')
         
         return redirect(url_for('user.profile'))
 
@@ -99,7 +99,7 @@ class ProfileController:
             flash(str(e), 'danger')
         except Exception as e:
             logger.error(f"falha ao alterar senha: {str(e)}")
-            flash('Erro interno. Tente novamente.', 'danger')
+            flash('Erro interno, tente novamente', 'danger')
         
         return redirect(url_for('user.profile'))
 
@@ -124,6 +124,6 @@ class ProfileController:
             flash(str(e), 'danger')
         except Exception as e:
             logger.error(f"Erro ao desativar conta: {str(e)}")
-            flash('Erro interno. Tente novamente.', 'danger')
+            flash('Erro interno, tente novamente', 'danger')
         
         return redirect(url_for('user.profile'))
