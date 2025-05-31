@@ -42,15 +42,15 @@ function buscarLivro() {
     
     resultado.innerHTML = '<div class="text-center">Buscando...</div>';
     
-    fetch(`/api/books/search?term=${isbn}`)
+    fetch(`/books/search?term=${isbn}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
                 resultado.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
             
             } else {
-                const status = data.available ? 'Disponível' : 'Indisponível';
-                const cor = data.available ? 'success' : 'danger';
+                const status = data.is_available ? 'Disponível' : 'Indisponível';
+                const cor = data.is_available ? 'success' : 'danger';
                 
                 resultado.innerHTML = `
                     <div class="card shadow-sm">
@@ -60,8 +60,8 @@ function buscarLivro() {
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><strong>ISBN:</strong> ${data.isbn}</li>
-                                <li class="list-group-item"><strong>Autor:</strong> ${data.author || 'Não informado'}</li>
-                                <li class="list-group-item"><strong>Ano de Publicação:</strong> ${data.publication_year || 'Não informado'}</li>
+                                <li class="list-group-item"><strong>Autor:</strong> ${data.authors_names || 'Não informado'}</li>
+                                <li class="list-group-item"><strong>Ano de Publicação:</strong> ${data.publish_year || 'Não informado'}</li>
                                 <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-${cor}">${status}</span></li>
                             </ul>
                         </div>

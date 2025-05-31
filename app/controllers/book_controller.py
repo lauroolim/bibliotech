@@ -1,6 +1,9 @@
 from app.services.book_service import BookService
 from flask import render_template, request, redirect, url_for, flash
 from app.utils.decorators import handle_controller_errors
+import logging
+from flask import jsonify
+logger = logging.getLogger(__name__)
 
 class BookController:
     def __init__(self, book_service: BookService):
@@ -19,7 +22,7 @@ class BookController:
 
             self.book_service.register_book(title, isbn, publish_year, author_ids)
             flash('Livro cadastrado com sucesso', 'success') 
-            return redirect(url_for('admin.list_book'))  
+            return redirect(url_for('admin.list_books'))  
                 
         authors = self.book_service.get_all_authors()
         return render_template('admin/register_book.html', authors=authors)
@@ -45,13 +48,28 @@ class BookController:
         pagination = self.book_service.list_books(page, per_page, search)
         return render_template('admin/list_books.html', **pagination)
 
-    def search_book_by_isbn(self, isbn):
-        book = self.book_service.search_by_isbn(isbn)
-        return book
+    def search_book_by_isbn_ajax(self):
+        search_term = request.args.get('term', '')
+        if not search_term:
+            return jsonify({'error': 'Termo de busca obrigatório'}), 400
+
+        try:
+            book = self.book_service.search_by_isbn(search_term)
+            authors_names = [author['full_name'] for author in book.authors] if book.authors else []
+            return jsonify({
+                'id': book.id,
+                'title': book.title,
+                'isbn': book.isbn,
+                'is_available': book.is_available,
+                'publish_year': book.publish_year,
+                'authors': authors_names
+            })
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 404
+        except Exception as e:
+            logger.error(f"Falha na busca de livro: {str(e)}")
+            return jsonify({'error': 'Erro interno'}), 500
+
 
     def get_book_by_id(self, book_id):
-        book = self.book_service.get_book_by_id(book_id)
-        if not book:
-            raise ValueError("Livro não encontrado")
-
-        return book
+        return self.book_service.get_book_by_id(book_id)

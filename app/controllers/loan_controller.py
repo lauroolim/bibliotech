@@ -105,25 +105,6 @@ class LoanController:
             logger.error(f"Falha na busca de usuário: {str(e)}")
             return jsonify({'error': 'Erro interno'}), 500
 
-    def search_book_ajax(self):
-        search_term = request.args.get('term', '')
-        if not search_term:
-            return jsonify({'error': 'Termo de busca obrigatório'}), 400
-
-        try:
-            book = self.loan_service.search_book(search_term)
-            if book:
-                return jsonify({
-                    'id': book.id,
-                    'title': book.title,
-                    'isbn': book.isbn
-                })
-            else:
-                return jsonify({'error': 'Livro não encontrado'}), 404
-        except Exception as e:
-            logger.error(f"Falha na busca de livro: {str(e)}")
-            return jsonify({'error': 'Erro interno'}), 500
-
     def check_book_availability_ajax(self):
         book_id = request.args.get('book_id', type=int)
         if not book_id:
