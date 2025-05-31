@@ -58,7 +58,7 @@ class LoanController:
 
         if request.method == 'POST':
             return_date = self._get_brazil_date()
-            notes = request.form.get('return_notes', '')
+            notes = request.form['return_notes'].strip()
             
             result = self.loan_service.return_loan(
                 loan_id=loan_id,
