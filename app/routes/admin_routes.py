@@ -86,13 +86,13 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     @login_required
     @admin_required
     def search_user_ajax():
-        return loan_controller.search_user_ajax()
+        return user_controller.search_user_ajax()
 
     @admin_bp.route('/api/search-book', methods=['GET'])
     @login_required
     @admin_required
     def search_book_ajax():
-        return loan_controller.search_book_ajax()
+        return book_controller.search_book_by_isbn_ajax()
 
     @admin_bp.route('/api/check-book-availability', methods=['GET'])
     @login_required

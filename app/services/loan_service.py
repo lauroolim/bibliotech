@@ -12,7 +12,7 @@ class LoanService:
         self.user_repository = user_repository
         self.book_repository = book_repository
 
-    def create_loan(self, user_id: int, book_id: int, employee_id: int, days_to_return: int = 14):
+    def create_loan(self, user_id, book_id, employee_id, days_to_return = 14):
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
             raise ValueError("Usuario nao encontrado")
@@ -112,16 +112,3 @@ class LoanService:
     def get_dashboard_stats(self):
         return self.loan_repository.fetch_loan_stats()
 
-    def search_user(self, email):
-
-        user = self.user_repository.fetch_user_by_email(email)
-        if user:
-            return user
-        return None
-
-    def search_book(self, isbn):
-        book = self.book_repository.fetch_book_by_isbn(isbn)
-        if book:
-            return book
-        
-        return None

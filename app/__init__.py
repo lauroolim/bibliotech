@@ -83,9 +83,9 @@ def create_app(config_name='development'):
     book_bp = create_book_blueprint(book_controller)
     app.register_blueprint(book_bp)
 
-    from app.routes.profile_routes import create_profile_blueprint
-    profile_bp = create_profile_blueprint(profile_controller)
-    app.register_blueprint(profile_bp)
+    from app.routes.user_routes import create_user_blueprint
+    user_bp = create_user_blueprint(user_controller, profile_controller)
+    app.register_blueprint(user_bp)
 
     @app.route('/')
     def index():

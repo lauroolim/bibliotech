@@ -39,6 +39,9 @@ class IUserRepository(ABC):
     @abstractmethod
     def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
         pass
+    @abstractmethod
+    def fetch_user_by_username(self, username: str) -> User:
+        pass
 class PSQLUserRepository(IUserRepository):
     def __init__(self, db):
         self.db = db
@@ -257,3 +260,26 @@ class PSQLUserRepository(IUserRepository):
         except Exception as e:
             logger.error(f"falha ao inser nova senha do user {user_id} no banco: {str(e)}")
             return False
+            
+    def fetch_user_by_username(self, username: str) -> User:
+        query = "SELECT id, username, email, phone, password, created_at, is_active FROM users WHERE username = ?"
+        params = [username]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            user = cursor.fetchone()
+
+            if user:
+                return User(
+                    id=user[0], 
+                    username=user[1], 
+                    email=user[2],
+                    phone=user[3],
+                    password=user[4], 
+                    created_at=user[5],
+                    is_active=user[6]
+                )
+            return None
+        except Exception as e:
+            logger.error(f"falha ao buscar usuario pelo username no banco: {str(e)}")
+            return None

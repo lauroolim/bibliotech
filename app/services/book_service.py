@@ -86,9 +86,21 @@ class BookService:
             raise ValueError(f"livro com ISBN {isbn} não encontrado")
         
         book.authors = self.book_repository._fetch_authors_by_book_id(book.id)
-    
         book.is_available = self.book_repository.is_book_available(book.id)
         book.available_copies = 1 if book.is_available else 0
         book.total_copies = 1
         
         return book
+
+    def get_book_by_id(self, book_id):
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("Livro não encontrado")
+        
+        book.authors = self.book_repository._fetch_authors_by_book_id(book.id)
+        book.is_available = self.book_repository.is_book_available(book.id)
+        book.available_copies = 1 if book.is_available else 0
+        book.total_copies = 1
+        
+        return book
+    

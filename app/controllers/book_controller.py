@@ -1,9 +1,15 @@
 from app.services.book_service import BookService
 from flask import render_template, request, redirect, url_for, flash
+from app.utils.decorators import handle_controller_errors
+import logging
+from flask import jsonify
+logger = logging.getLogger(__name__)
+
 class BookController:
     def __init__(self, book_service: BookService):
         self.book_service = book_service
 
+    @handle_controller_errors('admin.register_book')
     def register_book(self):
         if request.method == 'POST':
             title = request.form['title']
@@ -12,65 +18,58 @@ class BookController:
             author_ids = request.form.getlist('author_ids')
             
             if publish_year:
-                try:
-                    publish_year = int(publish_year)
-                except ValueError:
-                    flash('Ano de publicação deve ser um número', 'danger')
-                    authors = self.book_service.get_all_authors()
-                    return render_template('admin/register_book.html', authors=authors)
+                publish_year = int(publish_year)
 
-            try:
-                self.book_service.register_book(title, isbn, publish_year, author_ids)
-                flash('Livro cadastrado com sucesso', 'success') 
-                return redirect(url_for('admin.register_book'))  
-            except ValueError as e:
-                flash(str(e), 'danger')
+            self.book_service.register_book(title, isbn, publish_year, author_ids)
+            flash('Livro cadastrado com sucesso', 'success') 
+            return redirect(url_for('admin.list_books'))  
                 
         authors = self.book_service.get_all_authors()
         return render_template('admin/register_book.html', authors=authors)
 
+    @handle_controller_errors('admin.register_author')
     def register_author(self):
         if request.method == 'POST':
             full_name = request.form['full_name']
             
-            try:
-                self.book_service.register_author(full_name)
-                flash('Autor cadastrado com sucesso', 'success')
-                return redirect(url_for('admin.register_author'))
-            except ValueError as e:
-                flash(str(e), 'danger')
+
+            self.book_service.register_author(full_name)
+            flash('Autor cadastrado com sucesso', 'success')
+            return redirect(url_for('admin.register_author'))
                 
         return render_template('admin/register_author.html')
 
+    @handle_controller_errors('admin.list_books')
     def list_books(self):
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int) 
         search = request.args.get('search', '', type=str)
 
-        try:
-            pagination = self.book_service.list_books(page, per_page, search)
-            return render_template('admin/list_books.html', **pagination)
-        except ValueError as e:
-            flash(str(e), 'danger')
-            return redirect(url_for('admin.dashboard'))
+        pagination = self.book_service.list_books(page, per_page, search)
+        return render_template('admin/list_books.html', **pagination)
 
-    def search_book_by_isbn(self, isbn):
+    def search_book_by_isbn_ajax(self):
+        search_term = request.args.get('term', '')
+        if not search_term:
+            return jsonify({'error': 'Termo de busca obrigatório'}), 400
+
         try:
-            book = self.book_service.search_by_isbn(isbn)
-            return book
+            book = self.book_service.search_by_isbn(search_term)
+            authors_names = [author['full_name'] for author in book.authors] if book.authors else []
+            return jsonify({
+                'id': book.id,
+                'title': book.title,
+                'isbn': book.isbn,
+                'is_available': book.is_available,
+                'publish_year': book.publish_year,
+                'authors': authors_names
+            })
         except ValueError as e:
-            raise ValueError(str(e))
+            return jsonify({'error': str(e)}), 404
+        except Exception as e:
+            logger.error(f"Falha na busca de livro: {str(e)}")
+            return jsonify({'error': 'Erro interno'}), 500
+
 
     def get_book_by_id(self, book_id):
-        try:
-            book = self.book_repository.fetch_book_by_id(book_id)
-            if not book:
-                raise ValueError("Livro não encontrado")
-                
-            if self.loan_repository:
-                book.is_available = self.loan_repository.is_book_available(book.id)
-                book.available_copies = 1 if book.is_available else 0
-                book.total_copies = 1
-            return book
-        except Exception as e:
-            raise ValueError(str(e))
+        return self.book_service.get_book_by_id(book_id)
