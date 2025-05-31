@@ -6,6 +6,7 @@ class UserController:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
+    @handle_controller_errors('admin.list_users')
     def register_user(self):
         if request.method == 'POST':
             username = request.form['username']
@@ -13,12 +14,9 @@ class UserController:
             password = request.form['password']
             phone = request.form['phone']
 
-            try:
-                self.user_service.register_user(username, password, email, phone)
-                flash('Usuário cadastrado com sucesso', 'success') 
-                return redirect(url_for('admin.register_user'))  
-            except ValueError as e:
-                flash(str(e), 'danger')
+            self.user_service.register_user(username, password, email, phone)
+            flash('Usuário cadastrado com sucesso', 'success') 
+            return redirect(url_for('admin.register_user'))  
 
         return render_template('admin/register_user.html')  
     

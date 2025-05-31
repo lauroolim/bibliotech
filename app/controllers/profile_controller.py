@@ -36,66 +36,65 @@ class ProfileController:
 
     @handle_controller_errors('user.profile')
     def update_profile(self):
-        if request.method != 'POST':
+        if request.method == 'POST':
+        
+            username = request.form['username'].strip()
+            email = request.form['email'].strip()
+            phone = request.form['phone'].strip()
+            
+            self.user_service.update_user_profile(
+                user_id=current_user.id,
+                username=username,
+                email=email,
+                phone=phone
+            )
+            flash('Perfil atualizado com sucesso!', 'success')
+        
             return redirect(url_for('user.profile'))
-        
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        phone = request.form.get('phone', '').strip()
-        
-        self.user_service.update_user_profile(
-            user_id=current_user.id,
-            username=username,
-            email=email,
-            phone=phone
-        )
-        flash('Perfil atualizado com sucesso!', 'success')
-    
-        return redirect(url_for('user.profile'))
+
+        return render_template('user/update_profile.html')
 
     @handle_controller_errors('user.profile')
     def change_password(self):
-        if request.method != 'POST':
+        if request.method == 'POST':
+            current_password = request.form['current_password']
+            new_password = request.form['new_password']
+            confirm_password = request.form['confirm_password']
+            
+            if not all([current_password, new_password, confirm_password]):
+                flash('Todos os campos são obrigatórios', 'danger')
+                return redirect(url_for('user.profile'))
+            
+            if new_password != confirm_password:
+                flash('Nova senha e confirmação não coincidem', 'danger')
+                return redirect(url_for('user.profile'))
+            
+            if len(new_password) < 6:
+                flash('Nova senha deve ter pelo menos 6 caracteres', 'danger')
+                return redirect(url_for('user.profile'))
+            
+            self.user_service.change_password(
+                user_id=current_user.id,
+                current_password=current_password,
+                new_password=new_password
+            )
+            flash('Senha alterada com sucesso!', 'success')
             return redirect(url_for('user.profile'))
-        
-        current_password = request.form.get('current_password', '')
-        new_password = request.form.get('new_password', '')
-        confirm_password = request.form.get('confirm_password', '')
-        
-        if not all([current_password, new_password, confirm_password]):
-            flash('Todos os campos são obrigatórios', 'danger')
-            return redirect(url_for('user.profile'))
-        
-        if new_password != confirm_password:
-            flash('Nova senha e confirmação não coincidem', 'danger')
-            return redirect(url_for('user.profile'))
-        
-        if len(new_password) < 6:
-            flash('Nova senha deve ter pelo menos 6 caracteres', 'danger')
-            return redirect(url_for('user.profile'))
-        
-        self.user_service.change_password(
-            user_id=current_user.id,
-            current_password=current_password,
-            new_password=new_password
-        )
-        flash('Senha alterada com sucesso!', 'success')
-        
-        return redirect(url_for('user.profile'))
+
+        return render_template('user/change_password.html')
 
     @handle_controller_errors('index')
     def deactivate_account(self):
-        if request.method != 'POST':
-            return redirect(url_for('user.profile'))
+        if request.method == 'POST':
+            password = request.form['password']
+            
+            if not password:
+                flash('A senha é obrigatória para desativar conta', 'danger')
+                return redirect(url_for('user.profile'))
         
-        password = request.form.get('password', '')
-        
-        if not password:
-            flash('A senha é obrigatória para desativar conta', 'danger')
-            return redirect(url_for('user.profile'))
-    
-        self.user_service.deactivate_user(current_user.id, password)
-        
-        flash('Conta desativada com sucesso', 'info')
-        logout_user()
-        return redirect(url_for('index')) 
+            self.user_service.deactivate_user(current_user.id, password)
+            
+            flash('Conta desativada com sucesso', 'info')
+            logout_user()
+            return redirect(url_for('index')) 
+        return render_template('user/deactivate_account.html')
