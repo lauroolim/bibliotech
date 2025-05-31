@@ -2,6 +2,8 @@ from functools import wraps
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from functools import wraps
+import logging
+logger = logging.getLogger(__name__)
 
 def admin_required(f):
     @wraps(f)

@@ -13,25 +13,22 @@ class LoanService:
         self.book_repository = book_repository
 
     def create_loan(self, user_id, book_id, employee_id, days_to_return = 14):
+        if days_to_return < 0:
+            raise ValueError("não é possível criar um emprestimo com dias antes da data atual")
+
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
-            raise ValueError("Usuario nao encontrado")
+            raise ValueError("user nao encontrado")
 
         book = self.book_repository.fetch_book_by_id(book_id)
         if not book:
             raise ValueError("livro nao encontrado")
-
-        if not self.book_repository.is_book_available(book_id):
-            raise ValueError("livro não esta disponível para emprestimo")
-        
         expected_return_date = date.today() + timedelta(days=days_to_return)
 
         loan_id = self.loan_repository.insert_loan(user_id, book_id, employee_id, expected_return_date)
-        if not loan_id:
-            raise ValueError("erro ao criar emprestimo")
-
-        logger.info(f"Emprestimo criado: ID={loan_id}, User={user_id}, Book={book_id}")
+        logger.info(f"emprestimo criado: ID={loan_id}, User={user_id}, Book={book_id}")
         return loan_id
+        
 
     def check_book_availability(self, book_id: int):
         is_available = self.book_repository.is_book_available(book_id)
