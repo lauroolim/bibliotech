@@ -1,6 +1,10 @@
 # BiblioTech
 
-Sistema de gerenciamento de biblioteca digital que permite catalogar, pesquisar e administrar acervos de livros e outros materiais bibliográficos.
+<div align="center">
+    <img src="static/img/bibliotech-home.svg" alt="alt text">
+</div>
+
+Sistema de gerenciamento digital para bibliotecas que permite catalogar, pesquisar e administrar acervos de livros, gerenciar usuários e empréstimos, além de fornecer um perfil de usuário com histórico de empréstimos e multas. 
 
 ## Tecnologias Utilizadas
 
@@ -141,7 +145,7 @@ bibliotech-py/
 - **Gestão administrativa de Livros**: Cadastro e Catalogação de livros com autores e status de disponibilidade
 - **Gestão administrativa de Autores**: Cadastro e gerenciamento de autores
 - **Gestão admnistrativa de Empréstimos**: Registro e controle de empréstimos de livros e devoluções
-- **Autenticação**: Login e logout de usuários
+- **Autenticação**: Login e logout de usuários e administração separados 
 - **Perfil de usuário**: Visualização e edição de perfil
 - **Gerenciamento dos própios empréstimos**: Visualização de painel de empréstimos no perfil do usuário, com histórico de empréstimos e status atual
 - **Controle de Multas**: Cálculo automático de multas por atraso
