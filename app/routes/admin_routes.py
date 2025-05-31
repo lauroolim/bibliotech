@@ -86,7 +86,7 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     @login_required
     @admin_required
     def search_user_ajax():
-        return loan_controller.search_user_ajax()
+        return user_controller.search_user_ajax()
 
     @admin_bp.route('/api/search-book', methods=['GET'])
     @login_required

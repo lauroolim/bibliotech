@@ -2,10 +2,9 @@ from app.services.user_service import UserService
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
 from app.utils.decorators import handle_controller_errors
-
 import logging
-
-logger = logging.getLogger(__name__) 
+from flask import jsonify
+logger = logging.getLogger(__name__)
 
 class UserController:
     def __init__(self, user_service: UserService):
@@ -36,7 +35,7 @@ class UserController:
 
     @handle_controller_errors('admin.list_users')
     def delete_user(self, user_id):
-        self.user_service.delete_user(user_id)  
+        self.user_service.deactivate_user(user_id)  
 
         flash('Usuário deletado com sucesso', 'success') 
 
@@ -55,3 +54,26 @@ class UserController:
             return redirect(url_for('admin.list_users'))  
         return render_template('admin/edit_user.html', user=user)
 
+    def search_user_ajax(self):
+        search_term = request.args.get('term', '')
+        if not search_term:
+            return jsonify({'error': 'Termo de busca obrigatório'}), 400
+
+        try:
+            user = self.user_service.search_user(search_term)
+            if user:
+                return jsonify({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'phone': user.phone or ''
+                })
+            else:
+                return jsonify({'error': 'Usuário não encontrado'}), 404
+
+        except ValueError as e:
+
+            return jsonify({'error': str(e)}), 400
+        except Exception as e:
+            logger.error(f"Falha na busca de usuário: {str(e)}")
+            return jsonify({'error': 'Erro interno'}), 500

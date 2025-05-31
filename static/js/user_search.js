@@ -5,7 +5,7 @@ class UserSearch extends SearchBase {
             searchButtonId: 'searchUserBtn',
             resultContainerId: 'userResult',
             hiddenInputId: 'user_id',
-            placeholder: 'Digite email do usuário'
+            placeholder: 'Digite username ou email do usuário'
         };
         super({...defaults, ...options});
     }

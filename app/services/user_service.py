@@ -94,3 +94,30 @@ class UserService:
             raise ValueError("user não encontrado")
         
         return user
+    
+    def search_user_by_email(self, email):
+        if not email or not email.strip():
+            raise ValueError("email obrigatório")
+        
+        email = email.strip().lower()
+        
+        user = self.user_repository.fetch_user_by_email(email)
+
+        return user
+    
+    def search_user_by_username(self, username):
+        if not username or not username.strip():
+            raise ValueError("username obrigatorio")
+        
+        return self.user_repository.fetch_user_by_username(username.strip())
+
+    def search_user(self, search_term):
+        if not search_term or not search_term.strip():
+            raise ValueError("termo de busca obrigatorio")
+        
+        search_term = search_term.strip()
+        
+        if '@' in search_term:
+            return self.search_user_by_email(search_term)
+        else:
+            return self.search_user_by_username(search_term)

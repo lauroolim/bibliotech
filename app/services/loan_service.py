@@ -112,16 +112,3 @@ class LoanService:
     def get_dashboard_stats(self):
         return self.loan_repository.fetch_loan_stats()
 
-    def search_user(self, email):
-
-        user = self.user_repository.fetch_user_by_email(email)
-        if user:
-            return user
-        return None
-
-    def search_book(self, isbn):
-        book = self.book_repository.fetch_book_by_isbn(isbn)
-        if book:
-            return book
-        
-        return None
