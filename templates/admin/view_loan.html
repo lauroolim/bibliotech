@@ -130,7 +130,7 @@
                             <small class="text-muted">ISBN: {{ loan.book.isbn }}</small>
                         </p>
                         <hr>
-                        <a href="#" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ url_for('admin.view_book', book_id=loan.book.id) }}" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-info-circle"></i> Ver Detalhes do Livro
                         </a>
                     {% else %}

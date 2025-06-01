@@ -45,6 +45,19 @@ class IBookRepository(ABC):
     def is_book_available(self, book_id: int) -> bool:
         pass
 
+    @abstractmethod
+    def update_book(self, book_id: int, title: str = None, isbn: str = None, publish_year: int = None) -> bool:
+        pass
+    
+    @abstractmethod
+    def delete_book(self, book_id: int) -> bool:
+        pass 
+    @abstractmethod
+    def remove_all_book_authors(self, book_id: int) -> bool:
+        pass
+    @abstractmethod
+    def count_book_loans(self, book_id: int) -> int:
+        pass
 class PSQLBookRepository(IBookRepository):
     def __init__(self, db):
         self.db = db
@@ -115,15 +128,14 @@ class PSQLBookRepository(IBookRepository):
 
     def fetch_all_books(self, page, per_page, search=None):
         offset = (page - 1) * per_page
-        query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
         params = [per_page, offset]
 
         if search:
-            query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE title LIKE ? OR isbn LIKE ? ORDER BY id LIMIT ? OFFSET ?"
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE title LIKE ? OR isbn LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?"
             search_param = f"%{search}%"
             params = [search_param, search_param, per_page, offset]
         else:
-            query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id DESC LIMIT ? OFFSET ?"
             params = [per_page, offset]
 
         try:
@@ -249,4 +261,54 @@ class PSQLBookRepository(IBookRepository):
             return count == 0
         except Exception as e:
             logger.error(f"Erro ao verificar disponibilidade do livro: {str(e)}")
+            return False
+    
+    def count_book_loans(self, book_id):
+        query = "SELECT COUNT(*) FROM loans WHERE book_id = ?"
+        params = [book_id]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except Exception as e:
+            logger.error(f"Erro ao contar empréstimos do livro: {str(e)}")
+            return 0
+
+    def update_book(self, book_id: int, title: str = None, isbn: str = None, publish_year: int = None):
+        query = "UPDATE books SET title = ?, isbn = ?, publish_year = ? WHERE id = ?"
+        params = [title, isbn, publish_year, book_id]
+
+        try:
+            self.db.execute_query(query, params)
+            return True
+        except Exception as e:
+            logger.error(f"falha ao atualizar book no banco: {str(e)}")
+            return False
+
+    def delete_book(self, book_id: int):
+        try:
+            delete_associations_query = "DELETE FROM books_authors WHERE book_id = ?"
+            self.db.execute_query(delete_associations_query, [book_id])
+            
+            delete_book_query = "DELETE FROM books WHERE id = ?"
+            self.db.execute_query(delete_book_query, [book_id])
+            
+            #logger.info(f"Livro {book_id} e suas associações deletados com sucesso")
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao deletar livro {book_id}: {str(e)}")
+            return False
+    
+    def remove_all_book_authors(self, book_id):
+
+        query = "DELETE FROM books_authors WHERE book_id = ?"
+        params = [book_id]
+        
+        try:
+            self.db.execute_query(query, params)
+            logger.info(f"Todas as associações de autores removidas do livro {book_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao remover associações de autores do livro {book_id}: {str(e)}")
             return False

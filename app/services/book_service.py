@@ -1,12 +1,10 @@
 from app.repositories.book_repository import IBookRepository
 import logging
-
 logger = logging.getLogger(__name__)
 
 class BookService:
     def __init__(self, book_repository: IBookRepository):
         self.book_repository = book_repository
-
     def register_book(self, title, isbn, publish_year=None, author_ids=None):
         if not title or not title.strip():
             raise ValueError("Titulo obrigatorio")
@@ -67,8 +65,7 @@ class BookService:
                 if not self.book_repository.associate_book_author(book_id, author_id):
                     raise ValueError(f"Erro ao associar autor {author_id} ao livro")
                     
-                logger.info(f"Autor {author_id} associado ao livro {book_id}")
-                
+                #logger.info(f"Autor {author_id} associado ao livro {book_id}")
             except ValueError as e:
                 if "invalid literal" in str(e):
                     raise ValueError(f"ID do autor inválido: {author_id}")
@@ -101,6 +98,70 @@ class BookService:
         book.is_available = self.book_repository.is_book_available(book.id)
         book.available_copies = 1 if book.is_available else 0
         book.total_copies = 1
-        
         return book
     
+    def update_book(self, book_id, title=None, isbn=None, publish_year=None, author_ids=None):
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+
+        if title:
+            book.title = title.strip()
+        if isbn:
+            if not isbn.strip():
+                raise ValueError("ISBN obrigatorio")
+                
+            existing_book = self.book_repository.fetch_book_by_isbn(isbn.strip())
+            if existing_book and existing_book.id != book_id:
+                raise ValueError("ISBN ja cadastrado")
+            book.isbn = isbn.strip()
+        if publish_year:
+            try:
+                book.publish_year = int(publish_year)
+            except ValueError:
+                raise ValueError("Ano de publicação inválido")
+        
+        book_updated = self.book_repository.update_book(
+            book_id=book_id,
+            title=book.title,
+            isbn=book.isbn,
+            publish_year=book.publish_year
+        )
+        if not book_updated:
+            raise ValueError("falha ao atualizar livro")
+        
+        if author_ids is not None: 
+            self._remove_all_book_authors(book_id)
+            if author_ids:  
+                self._associate_authors(book_id, author_ids)
+            #logger.info(f"Autores do livro {book_id} atualizados: {len(author_ids)} autores associados")
+        return book.id
+    
+    def delete_book(self, book_id):
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+        
+        if not self.book_repository.delete_book(book_id):
+            raise ValueError("Falha ao deletar livro")
+        return True
+    def _remove_all_book_authors(self, book_id):
+
+        if not self.book_repository.remove_all_book_authors(book_id):
+            logger.warning(f"Falha ao remover autores do livro {book_id}")
+    def count_book_loans(self, book_id):
+
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+        
+        return self.book_repository.count_book_loans(book_id)
