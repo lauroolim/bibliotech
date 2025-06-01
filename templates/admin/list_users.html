@@ -52,15 +52,16 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="bi bi-pencil"></i> Editar
-                                        </a>
                                         {% if user.is_active %}
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
                                             <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
                                                 class="btn btn-sm btn-outline-danger"
                                                 onclick="return confirm('Tem certeza que deseja desativar este usuário?')">
                                                 <i class="bi bi-x-circle"></i> Desativar
                                             </a>
+
                                         {% else %}
                                             <a href="{{ url_for('admin.activate_user', user_id=user.id) }}"
                                                 class="btn btn-sm btn-outline-success"

@@ -37,7 +37,7 @@ class IUserRepository(ABC):
     def fetch_user_active_loans(self, user_id: int, limit: int = 5) -> list:
         pass
     @abstractmethod
-    def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
+    def update_password(self, user_id: int, hashed_new_password: str) -> bool:
         pass
     @abstractmethod
     def fetch_user_by_username(self, username: str) -> User:
@@ -122,10 +122,8 @@ class PSQLUserRepository(IUserRepository):
         params = [hashed_new_password, int(user_id)]  
 
         try:
-            cursor = self.db.execute_query(query, params)
-            affected_rows = cursor.rowcount
-            cursor.close()
-            return affected_rows > 0
+            self.db.execute_query(query, params)
+            return True
         except Exception as e:
             logger.error(f"repository falha ao atualizar senha do usuario no banco: {str(e)}")
             return False
