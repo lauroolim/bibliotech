@@ -39,35 +39,34 @@ class UserService:
 
     def deactivate_user(self, user_id):
         if not user_id:
-            raise ValueError("ID do usuário é obrigatório")
-        user_before = self.user_repository.fetch_user_by_id(user_id)
-        logger.info(f"DEBUG ANTES: User {user_id} - is_active: {user_before.is_active if user_before else 'NOT_FOUND'}")
-        
+            raise ValueError("userID é obrigatorio")
+        user = self.user_repository.fetch_user_by_id(user_id)
+        if not user:
+            raise ValueError("user nao encontrado")
+        if not user.is_active:
+            raise ValueError("user ja esta desativado")
+
         result = self.user_repository.soft_delete_user(user_id)
-        logger.info(f"DEBUG RESULTADO: soft_delete_user retornou: {result}")
-        
-        user_after = self.user_repository.fetch_user_by_id(user_id)
-        logger.info(f"DEBUG DEPOIS: User {user_id} - is_active: {user_after.is_active if user_after else 'NOT_FOUND'}")
         
         if not result:
-            raise ValueError("Erro ao desativar usuário")
+            raise ValueError("Erro ao desativar usuario")
         return result
 
     def activate_user(self, user_id):
         if not user_id:
-            raise ValueError("ID do usuário é obrigatório")
+            raise ValueError("userID é obrigatorio")
         
         user = self.user_repository.fetch_user_by_id(user_id)
         if not user:
-            raise ValueError("Usuário não encontrado")
+            raise ValueError("user nao encontrado")
         
         if user.is_active:
-            raise ValueError("Usuário já está ativo")
+            raise ValueError("user ja esta ativo")
         
         result = self.user_repository.activate_user(user_id)
         
         if not result:
-            raise ValueError("Erro ao reativar usuário")
+            raise ValueError("Erro ao reativar usuario")
         
         return result
 
@@ -75,18 +74,13 @@ class UserService:
         if not user_id:
             raise ValueError("userID  obrigatorio")
         
-        result = self.user_repository.update_user(
-            user_id, 
-            username=username,
-            email=email,
-            phone=phone
-        )
+        result = self.user_repository.update_user(user_id, username=username, email=email, phone=phone)
         if not result:
             raise ValueError("Erro ao atualizar dados do user")
         
         if password:
             password_hash = hash_password(password)
-            password_result = self.user_repository.update_password(user_id, password_hash)  # ✅ Método correto
+            password_result = self.user_repository.update_password(user_id, password_hash)  
             
             if not password_result:
                 raise ValueError("Erro ao atualizar senha do user")
@@ -103,7 +97,7 @@ class UserService:
         try:
             user = self.user_repository.fetch_user_by_id(user_id)
             if not user:
-                raise ValueError("Usuário não encontrado")
+                raise ValueError("user não encontrado")
             
             stats = self.user_repository.fetch_user_loan_stats(user_id)
             logger.info(f"Stats retornadas do repository: {stats}")

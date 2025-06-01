@@ -104,3 +104,52 @@ class BookService:
         
         return book
     
+    def update_book(self, book_id, title=None, isbn=None, publish_year=None, author_ids=None):
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+
+        if title:
+            book.title = title.strip()
+        
+        if isbn:
+            if not isbn.strip():
+                raise ValueError("ISBN obrigatorio")
+                
+            existing_book = self.book_repository.fetch_book_by_isbn(isbn.strip())
+            if existing_book and existing_book.id != book_id:
+                raise ValueError("ISBN ja cadastrado")
+                
+            book.isbn = isbn.strip()
+        
+        if publish_year:
+            try:
+                book.publish_year = int(publish_year)
+            except ValueError:
+                raise ValueError("Ano de publicação inválido")
+        
+        book_updated = self.book_repository.update_book(
+            book_id=book_id,
+            title=book.title,
+            isbn=book.isbn,
+            publish_year=book.publish_year
+        )
+        if not book_updated:
+            raise ValueError("falha ao atualizar livro")
+        
+        return book.id
+    
+    def delete_book(self, book_id):
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+        
+        if not self.book_repository.delete_book(book_id):
+            raise ValueError("Falha ao deletar livro")
+        return True

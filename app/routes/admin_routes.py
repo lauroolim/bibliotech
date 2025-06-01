@@ -59,6 +59,18 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     def list_books():
         return book_controller.list_books()
 
+    @admin_bp.route('/books/<int:book_id>/edit', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def edit_book(book_id):
+        return book_controller.edit_book(book_id)
+
+    @admin_bp.route('/books/<int:book_id>/delete', methods=['GET'])
+    @login_required
+    @admin_required
+    def delete_book(book_id):
+        return book_controller.delete_book(book_id)
+
     # emprestimos
     @admin_bp.route('/loans', methods=['GET'])
     @login_required

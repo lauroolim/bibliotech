@@ -255,7 +255,7 @@ class PSQLUserRepository(IUserRepository):
         except Exception as e:
             logger.error(f"falha no repository ao buscar emprestimos ativos do user {user_id}: {str(e)}")
             return []
-    
+
     def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
         query = "UPDATE users SET password = ? WHERE id = ?"
         params = [hashed_new_password, user_id]

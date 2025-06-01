@@ -70,6 +70,38 @@ class BookController:
             logger.error(f"Falha na busca de livro: {str(e)}")
             return jsonify({'error': 'Erro interno'}), 500
 
+    @handle_controller_errors('admin.list_books')
+    def edit_book(self, book_id):
+        book = self.book_service.get_book_by_id(book_id)
+        authors = self.book_service.get_all_authors()
+        
+        if request.method == 'POST':
+            title = request.form['title']
+            isbn = request.form['isbn'] 
+            publish_year = request.form.get('publish_year') or None
+            author_ids = request.form.getlist('author_ids')  
+            
+            self.book_service.update_book(
+                book_id=book_id, 
+                title=title, 
+                isbn=isbn, 
+                publish_year=publish_year,
+                author_ids=author_ids 
+            )
+            
+            flash('Livro atualizado com sucesso!', 'success')
+            return redirect(url_for('admin.list_books'))
+            
+        return render_template('admin/edit_book.html', book=book, authors=authors)
+
+    @handle_controller_errors('admin.list_books')
+    def delete_book(self, book_id):
+        try:
+            self.book_service.delete_book(book_id)
+            flash('Livro excluído com sucesso!', 'success')
+        except ValueError as e:
+            flash(str(e), 'error')
+        return redirect(url_for('admin.list_books'))
 
     def get_book_by_id(self, book_id):
         return self.book_service.get_book_by_id(book_id)
