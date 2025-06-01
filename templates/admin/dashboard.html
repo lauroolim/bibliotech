@@ -109,10 +109,9 @@
     {% if stats.overdue_loans and stats.overdue_loans > 0 %}
     <div class="row">
         <div class="col-12">
-            <div class="alert alert-warning shadow-sm"></div>
+            <div class="alert alert-warning shadow-sm">
                 <h5><i class="bi bi-exclamation-triangle"></i> Atenção!</h5>
                 <p>Há {{ stats.overdue_loans }} empréstimo(s) em atraso. 
-                   <a href="{{ url_for('admin.overdue_loans') }}" class="alert-link">Clique aqui para ver a lista completa</a>.
                 </p>
             </div>
         </div>

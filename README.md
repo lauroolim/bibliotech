@@ -14,6 +14,8 @@ Sistema de gerenciamento digital para bibliotecas que permite catalogar, pesquis
 - **Administração de DB**: pgAdmin 4
 - **Migrations**: Yoyo Migrations
 - **Containerização**: Docker e Docker Compose
+- **Proxy Reverso**: Nginx
+- **seed**: Faker para geração de dados fictícios
 
 ## Configuração do Ambiente
 
@@ -30,26 +32,25 @@ git clone [URL_DO_REPOSITORIO]
 cd bibliotech-py
 ```
 
-2. Inicie os containers:
+2. Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+3. Inicie os containers:
 
 ```bash
 docker-compose up --build -d
 ```
 
-3. Instale as dependências:
+4. Instale as dependências:
 
 ```bash
 docker exec -it bibliotech-app sh
 
 # dentro do container, instale as dependências
 pip install -r requirements.txt
-```
-
-4. Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
-
-```bash
-cp .env.example .env
-# edite o arquivo .env com suas configurações
 ```
 
 5. Execute as migrations do banco de dados:
@@ -60,6 +61,18 @@ yoyo apply
 ```
 
 6. Acesse em <http://localhost:8000>
+
+### Dados de Teste
+
+Para popular o banco com dados fictícios:
+
+```bash
+# Acessar container
+docker exec -it bibliotech_app sh
+
+# Executar script de seed 
+python scripts/seed_database.py
+```
 
 ### Comandos Úteis
 
@@ -129,6 +142,7 @@ bibliotech-py/
 ├── static/                # Arquivos estáticos (CSS, JS, imagens)
 ├── migrations/            # Migrations do banco de dados (Yoyo)
 ├── proxy/                  # Configuração do proxy reverso (Nginx)
+├── scripts/                # Scripts auxiliares
 ├── docker-compose.yml     # Configuração do Docker Compose
 ├── Dockerfile              # Dockerfile da aplicação
 ├── .env.example            # Exemplo de arquivo de variáveis de ambiente
@@ -138,18 +152,18 @@ bibliotech-py/
 └── run.py                # Arquivo de entrada da aplicação
 ```
 
-## Funcionalidades
+## Funcionalidades Principais
 
 - **Dashboard Administrativo**: Visão geral das estatísticas da biblioteca
 - **Gestão administrativa de Usuários**: Cadastro e gerenciamento de usuários da biblioteca
 - **Gestão administrativa de Livros**: Cadastro e Catalogação de livros com autores e status de disponibilidade
 - **Gestão administrativa de Autores**: Cadastro e gerenciamento de autores
-- **Gestão admnistrativa de Empréstimos**: Registro e controle de empréstimos de livros e devoluções
+- **Gestão admnistrativa de Empréstimos**: Registro e controle de empréstimos de livros, devoluções e multas
 - **Autenticação**: Login e logout de usuários e administração separados 
-- **Perfil de usuário**: Visualização e edição de perfil
-- **Gerenciamento dos própios empréstimos**: Visualização de painel de empréstimos no perfil do usuário, com histórico de empréstimos e status atual
+- **Perfil de usuário**: Visualização e edição de dados do perfil e painel de empréstimos
+- **Painel de empréstimos individual**: Visualização de painel de empréstimos no perfil do usuário, com histórico de empréstimos recentes e status atual
 - **Controle de Multas**: Cálculo automático de multas por atraso
-- **Busca de Livros**: Pesquisa por ISBN
+- **Busca de Livros**: Pesquisa no acervo da biblioteca por ISBN do livro
 
 ## Troubleshooting
 
@@ -157,4 +171,4 @@ bibliotech-py/
 
 - **Erro de conexão com banco via Pyodbc**: Verifique se o PostgreSQL está rodando e as configurações no arquivo `.env` estão corretas. Geralmente, o .env não é atualizado automaticamente no container, nesse caso, no `config.py`, configue as string hardcoded de conexão com o banco de dados, sem resgatar do .env.
 - **Migration failed**: Verifique se o banco está acessível e as credenciais estão corretas no `.env`
-- **Import errors**: Certifique-se de que todas as dependências foram instaladas com `pip install -r requirements.txt`
+- **Import errors**: Certifique-se de que todas as dependências foram instaladas com `pip install -r requirements.txt` dentro do container
