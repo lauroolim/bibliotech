@@ -45,7 +45,7 @@ class PSQLLoanRepository(ILoanRepository):
         params = [user_id, book_id, employee_id, expected_return_date, datetime.now()]
 
         try:
-            logger.debug(f"Criando empréstimo: user={user_id}, book={book_id}, employee={employee_id}")
+            #logger.debug(f"Criando empréstimo: user={user_id}, book={book_id}, employee={employee_id}")
             cursor = self.db.execute_query(query, params)
             result = cursor.fetchone()
             cursor.close()
@@ -82,7 +82,7 @@ class PSQLLoanRepository(ILoanRepository):
                 
                 user_obj = None
                 if loan_data[7]:
-                    user_obj = User(id=loan_data[4], username=loan_data[7], email=loan_data[8])
+                    user_obj = User(id=loan_data[4], username=loan_data[7], email=loan_data[8], is_active=True)
                 
                 book_obj = None
                 if loan_data[9]:
@@ -160,7 +160,7 @@ class PSQLLoanRepository(ILoanRepository):
                 
                 user_obj = None
                 if loan_data[7]:  
-                    user_obj = User(id=loan_data[4], username=loan_data[7], email=loan_data[8])
+                    user_obj = User(id=loan_data[4], username=loan_data[7], email=loan_data[8], is_active=True)
                 
                 book_obj = None
                 if loan_data[9]: 
@@ -260,7 +260,7 @@ class PSQLLoanRepository(ILoanRepository):
                     book_id=loan_data[5],
                     employee_id=loan_data[6],
                     status='atrasado',
-                    user=User(id=loan_data[4], username=loan_data[7], email=loan_data[8]) if loan_data[7] else None,
+                    user=User(id=loan_data[4], username=loan_data[7], email=loan_data[8], is_active=True) if loan_data[7] else None,
                     book=Book(id=loan_data[5], title=loan_data[9], isbn=loan_data[10]) if loan_data[9] else None
                 )
                 loans.append(loan)

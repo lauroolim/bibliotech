@@ -19,11 +19,20 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     def register_user():
         return user_controller.register_user()
     
-    @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
-    @login_required
+    @admin_bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
     @admin_required
-    def delete_user(user_id):
-        return user_controller.delete_user(user_id)
+    def edit_user(user_id):
+        return user_controller.edit_user(user_id)
+
+    @admin_bp.route('/users/<int:user_id>/deactivate', methods=['GET'])
+    @admin_required
+    def deactivate_user(user_id):
+        return user_controller.deactivate_user(user_id)
+
+    @admin_bp.route('/users/<int:user_id>/activate', methods=['GET'])
+    @admin_required
+    def activate_user(user_id):
+        return user_controller.activate_user(user_id)
 
     @admin_bp.route('/users/list', methods=['GET'])
     @login_required

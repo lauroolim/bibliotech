@@ -11,7 +11,7 @@
         <div class="card-body border-bottom">
             <form method="GET" class="row g-3">
                 <div class="col-md-3">
-                    <input type="text" name="search" class="form-control" placeholder="Buscar usuário..." value="{{ request.args.get('search', '') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Buscar usuário pelo username..." value="{{ request.args.get('search', '') }}">
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-outline-primary">Filtrar</button>
@@ -31,6 +31,8 @@
                                 <th>Usuário</th>
                                 <th>Email</th>
                                 <th>Telefone</th>
+                                <th>Data de Registro</th>
+                                <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -41,15 +43,32 @@
                                     <td>{{ user.username }}</td>
                                     <td>{{ user.email }}</td>
                                     <td>{{ user.phone }}</td>
+                                    <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                                     <td>
-                                        <a href="" class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="bi bi-pencil"></i> Editar
-                                        </a>
-                                        <a href="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                                            class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
-                                            <i class="bi bi-trash"></i> Excluir
-                                        </a>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">{{ user.is_active }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
+                                            <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Tem certeza que deseja desativar este usuário?')">
+                                                <i class="bi bi-x-circle"></i> Desativar
+                                            </a>
+
+                                        {% else %}
+                                            <a href="{{ url_for('admin.activate_user', user_id=user.id) }}"
+                                                class="btn btn-sm btn-outline-success"
+                                                onclick="return confirm('Tem certeza que deseja reativar este usuário?')">
+                                                <i class="bi bi-check-circle"></i> Reativar
+                                            </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}

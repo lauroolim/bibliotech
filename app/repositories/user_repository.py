@@ -37,7 +37,7 @@ class IUserRepository(ABC):
     def fetch_user_active_loans(self, user_id: int, limit: int = 5) -> list:
         pass
     @abstractmethod
-    def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
+    def update_password(self, user_id: int, hashed_new_password: str) -> bool:
         pass
     @abstractmethod
     def fetch_user_by_username(self, username: str) -> User:
@@ -64,16 +64,17 @@ class PSQLUserRepository(IUserRepository):
         try:
             cursor = self.db.execute_query(query, params)
             user = cursor.fetchone()
+            cursor.close()
 
             if user:
                 return User(
                     id=user[0], 
                     username=user[1], 
                     email=user[2], 
+                    is_active=user[6] in (True, 1, '1', 't', 'true'),  
                     phone=user[3],
                     password=user[4], 
-                    created_at=user[5],
-                    is_active=user[6] 
+                    created_at=user[5]
                 )
             return None
         except Exception as e:
@@ -87,21 +88,23 @@ class PSQLUserRepository(IUserRepository):
         try:
             cursor = self.db.execute_query(query, params)
             user = cursor.fetchone()
+            cursor.close()
 
             if user:
                 return User(
                     id=user[0], 
                     username=user[1], 
-                    email=user[2],
-                    phone=user[3],
-                    password=user[4], 
-                    created_at=user[5],
-                    is_active=user[6]
+                    email=user[2], 
+                    is_active=user[6] in (True, 1, '1', 't', 'true'), 
+                    password=user[4],
+                    phone=user[3], 
+                    created_at=user[5]
                 )
             return None
         except Exception as e:
-            logger.error(f"falha ao buscar usuario no banco: {str(e)}")
+            logger.error(f"falha ao buscar user no banco: {str(e)}")
             return None
+
     
     def update_user(self, user_id, username, email, phone):
         query = "UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?"
@@ -119,31 +122,37 @@ class PSQLUserRepository(IUserRepository):
         params = [hashed_new_password, int(user_id)]  
 
         try:
-            cursor = self.db.execute_query(query, params)
-            affected_rows = cursor.rowcount
-            return affected_rows > 0
+            self.db.execute_query(query, params)
+            return True
         except Exception as e:
             logger.error(f"repository falha ao atualizar senha do usuario no banco: {str(e)}")
             return False
 
     def soft_delete_user(self, user_id: int):
-        query = "UPDATE users SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        query = "UPDATE users SET is_active = FALSE WHERE id = ?"
         params = [user_id]
         
         try:
-            cursor = self.db.execute_query(query, params)
-            affected_rows = cursor.rowcount
-            cursor.close()
-
+            self.db.execute_query(query, params)
             logger.info(f"user {user_id} desativado no banco")
-            
-            return affected_rows > 0
+            return True
         except Exception as e:
             logger.error(f"repository falhou ao desativar user {user_id}: {str(e)}")
             return False
+    
+    def activate_user(self, user_id: int):
+        query = "UPDATE users SET is_active = TRUE WHERE id = ?"
+        params = [user_id]
+        
+        try:
+            self.db.execute_query(query, params)
+            logger.info(f"user {user_id} ativado no banco")
+            return True
+        except Exception as e:
+            logger.error(f"repository falhou ao ativar user {user_id}: {str(e)}")
+            return False
 
     def fetch_all_users(self, page, per_page, search: str = None):
-
         offset = (page - 1) * per_page
         
         if search:
@@ -151,38 +160,36 @@ class PSQLUserRepository(IUserRepository):
                 SELECT id, username, email, phone, password, created_at, is_active 
                 FROM users 
                 WHERE username LIKE ? OR email LIKE ? 
-                ORDER BY id 
+                ORDER BY id DESC
                 LIMIT ? OFFSET ?
             """
             search_param = f"%{search}%"
             params = [search_param, search_param, per_page, offset]
         else:
-            query = "SELECT id, username, email, phone, password, created_at, is_active FROM users ORDER BY id LIMIT ? OFFSET ?"
+            query = "SELECT id, username, email, phone, password, created_at, is_active FROM users ORDER BY id DESC LIMIT ? OFFSET ?"
             params = [per_page, offset]
 
         try:
             cursor = self.db.execute_query(query, params)
             users = cursor.fetchall()
             cursor.close()
-            if users:
-                return [
-                    User(
-                        id=user[0], 
-                        username=user[1], 
-                        email=user[2],
-                        phone=user[3], 
-                        password=user[4], 
-                        created_at=user[5],
-                        is_active=user[6]
-                    ) for user in users
-                ]
-            return []
+            
+            return [
+                User(
+                    id=user[0],           
+                    username=user[1],     
+                    email=user[2],        
+                    is_active=user[6] in (True, 1, '1', 't', 'true'),  
+                    password=user[4],     
+                    phone=user[3],        
+                    created_at=user[5]    
+                ) for user in users
+            ]
         except Exception as e:
             logger.error(f"falha ao buscar todos os usuarios no banco: {str(e)}")
             return []
 
     def count_users(self, search: str = None):
-
         if search:
             query = "SELECT COUNT(*) FROM users WHERE username LIKE ? OR email LIKE ?"
             search_param = f"%{search}%"
@@ -194,6 +201,7 @@ class PSQLUserRepository(IUserRepository):
         try:
             cursor = self.db.execute_query(query, params)
             result = cursor.fetchone()
+            cursor.close()
             return result[0] if result else 0
         except Exception as e:
             logger.error(f"falha ao contar total de usuários: {str(e)}")
@@ -274,10 +282,10 @@ class PSQLUserRepository(IUserRepository):
                     id=user[0], 
                     username=user[1], 
                     email=user[2],
+                    is_active=user[6] in (True, 1, '1', 't', 'true'),  
                     phone=user[3],
                     password=user[4], 
-                    created_at=user[5],
-                    is_active=user[6]
+                    created_at=user[5]
                 )
             return None
         except Exception as e:
