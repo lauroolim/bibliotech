@@ -8,5 +8,5 @@ def create_book_blueprint(book_controller):
     @login_required
     def search_book_ajax():
         return book_controller.search_book_by_isbn_ajax()
-
+    
     return book_bp

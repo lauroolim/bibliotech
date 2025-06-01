@@ -55,6 +55,9 @@ class IBookRepository(ABC):
     @abstractmethod
     def remove_all_book_authors(self, book_id: int) -> bool:
         pass
+    @abstractmethod
+    def count_book_loans(self, book_id: int) -> int:
+        pass
 class PSQLBookRepository(IBookRepository):
     def __init__(self, db):
         self.db = db
@@ -125,15 +128,14 @@ class PSQLBookRepository(IBookRepository):
 
     def fetch_all_books(self, page, per_page, search=None):
         offset = (page - 1) * per_page
-        query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
         params = [per_page, offset]
 
         if search:
-            query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE title LIKE ? OR isbn LIKE ? ORDER BY id LIMIT ? OFFSET ?"
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books WHERE title LIKE ? OR isbn LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?"
             search_param = f"%{search}%"
             params = [search_param, search_param, per_page, offset]
         else:
-            query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id LIMIT ? OFFSET ?"
+            query = "SELECT id, title, isbn, publish_year, created_at FROM books ORDER BY id DESC LIMIT ? OFFSET ?"
             params = [per_page, offset]
 
         try:
@@ -261,6 +263,18 @@ class PSQLBookRepository(IBookRepository):
             logger.error(f"Erro ao verificar disponibilidade do livro: {str(e)}")
             return False
     
+    def count_book_loans(self, book_id):
+        query = "SELECT COUNT(*) FROM loans WHERE book_id = ?"
+        params = [book_id]
+
+        try:
+            cursor = self.db.execute_query(query, params)
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except Exception as e:
+            logger.error(f"Erro ao contar empréstimos do livro: {str(e)}")
+            return 0
+
     def update_book(self, book_id: int, title: str = None, isbn: str = None, publish_year: int = None):
         query = "UPDATE books SET title = ?, isbn = ?, publish_year = ? WHERE id = ?"
         params = [title, isbn, publish_year, book_id]

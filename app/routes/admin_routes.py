@@ -47,6 +47,12 @@ def create_admin_blueprint(user_controller, book_controller, admin_controller, l
     def register_book():
         return book_controller.register_book()
     
+    @admin_bp.route('/books/<int:book_id>', methods=['GET'])
+    @login_required
+    @admin_required
+    def view_book(book_id):
+        return book_controller.view_book(book_id)
+
     @admin_bp.route('/books/author/register', methods=['GET', 'POST'])
     @login_required
     @admin_required

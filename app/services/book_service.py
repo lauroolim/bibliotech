@@ -155,3 +155,13 @@ class BookService:
 
         if not self.book_repository.remove_all_book_authors(book_id):
             logger.warning(f"Falha ao remover autores do livro {book_id}")
+    def count_book_loans(self, book_id):
+
+        if not book_id:
+            raise ValueError("bookID obrigatorio")
+        
+        book = self.book_repository.fetch_book_by_id(book_id)
+        if not book:
+            raise ValueError("livro nao encontrado")
+        
+        return self.book_repository.count_book_loans(book_id)

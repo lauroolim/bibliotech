@@ -103,5 +103,15 @@ class BookController:
             flash(str(e), 'error')
         return redirect(url_for('admin.list_books'))
 
-    def get_book_by_id(self, book_id):
-        return self.book_service.get_book_by_id(book_id)
+    @handle_controller_errors('admin.list_books')
+    def view_book(self, book_id):
+        book = self.book_service.get_book_by_id(book_id)
+        
+        if not book:
+            flash('Livro não encontrado.', 'error')
+            return redirect(url_for('admin.list_books'))
+        
+        total_loans = self.book_service.count_book_loans(book_id)
+    
+    
+        return render_template('admin/view_book.html', book=book, total_loans=total_loans) 

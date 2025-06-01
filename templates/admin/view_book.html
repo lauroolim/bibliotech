@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Livro - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.list_books') }}">Livros</a></li>
+                    <li class="breadcrumb-item active">{{ book.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">{{ book.title }}</h2>
+                    <span class="badge {% if book.is_available %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6">
+                        {% if book.is_available %}
+                            Disponível
+                        {% else %}
+                            Emprestado
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Informações do Livro</h4>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Título:</th>
+                                        <td><strong>{{ book.title }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">ISBN:</th>
+                                        <td>{{ book.isbn }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Ano de Publicação:</th>
+                                        <td>
+                                            {% if book.publish_year %}
+                                                {{ book.publish_year }}
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data de Cadastro:</th>
+                                        <td>{{ book.created_at.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Autores:</th>
+                                        <td>
+                                            {% if book.authors %}
+                                                {% for author in book.authors %}
+                                                    <span class="badge bg-light text-dark me-1">{{ author.full_name }}</span>
+                                                    {% if not loop.last %}<br>{% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="text-muted">Nenhum autor cadastrado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Estatística Geral</h4>
+                            <div class="row text-center g-3">
+                                <div class="col-12">
+                                    <div class="p-3 border rounded">
+                                        <div class="h4 mb-0 text-primary">{{ total_loans or 0 }}</div>
+                                        <small class="text-muted">Total de Empréstimos</small>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h5 class="mb-3">Status Atual</h5>
+                                {% if book.is_available %}
+                                    <div class="alert alert-success d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <div>
+                                            <strong>Disponível para empréstimo</strong><br>
+                                            <small>O livro pode ser emprestado no momento.</small>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <div>
+                                            <strong>Atualmente emprestado</strong><br>
+                                            <small>O livro não está disponível para empréstimo.</small>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-book text-primary" style="font-size: 5rem;"></i>
+                    </div>
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">
+                        {% if book.authors %}
+                            {% for author in book.authors %}
+                                {{ author.full_name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <em class="text-muted">Autor não informado</em>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0">Ações</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if book.is_available %}
+                            <a href="{{ url_for('admin.register_loan') }}?book_id={{ book.id }}" 
+                               class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Realizar Empréstimo
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('admin.edit_book', book_id=book.id) }}" 
+                           class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Editar Livro
+                        </a>
+                        
+                        <button type="button" class="btn btn-danger" 
+                                data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash"></i> Excluir Livro
+                        </button>
+                        
+                        <hr>
+                        
+                        <a href="{{ url_for('admin.list_books') }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar para Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o livro <strong>"{{ book.title }}"</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita. O livro e todo seu histórico serão removidos permanentemente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{{ url_for('admin.delete_book', book_id=book.id) }}" 
+                   class="btn btn-danger">Confirmar Exclusão</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
