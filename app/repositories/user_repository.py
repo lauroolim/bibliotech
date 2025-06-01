@@ -42,6 +42,9 @@ class IUserRepository(ABC):
     @abstractmethod
     def fetch_user_by_username(self, username: str) -> User:
         pass
+    @abstractmethod
+    def fetch_user_recent_loans(self, user_id: int, limit: int = 5) -> list:  
+        pass
 class PSQLUserRepository(IUserRepository):
     def __init__(self, db):
         self.db = db
@@ -256,18 +259,32 @@ class PSQLUserRepository(IUserRepository):
             logger.error(f"falha no repository ao buscar emprestimos ativos do user {user_id}: {str(e)}")
             return []
 
-    def update_user_password(self, user_id: int, hashed_new_password: str) -> bool:
-        query = "UPDATE users SET password = ? WHERE id = ?"
-        params = [hashed_new_password, user_id]
-
+    def fetch_user_recent_loans(self, user_id: int, limit: int = 5): 
+        query = """
+            SELECT l.id, l.expected_return_date, l.created_at, b.title 
+            FROM loans l
+            JOIN books b ON l.book_id = b.id
+            WHERE l.user_id = ?
+            ORDER BY l.created_at DESC
+            LIMIT ?
+        """
+        params = [user_id, limit]
         try:
             cursor = self.db.execute_query(query, params)
-            affected_rows = cursor.rowcount
+            loans = cursor.fetchall()
             cursor.close()
-            return affected_rows > 0
+
+            return [
+                {
+                    'id': loan[0],
+                    'expected_return_date': loan[1],
+                    'created_at': loan[2],
+                    'book_title': loan[3]
+                } for loan in loans
+            ]
         except Exception as e:
-            logger.error(f"falha ao inser nova senha do user {user_id} no banco: {str(e)}")
-            return False
+            logger.error(f"falha no repository ao buscar todos os emprestimos do user {user_id}: {str(e)}")
+            return []
             
     def fetch_user_by_username(self, username: str) -> User:
         query = "SELECT id, username, email, phone, password, created_at, is_active FROM users WHERE username = ?"

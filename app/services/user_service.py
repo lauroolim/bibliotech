@@ -93,6 +93,13 @@ class UserService:
         
         return self.user_repository.fetch_user_active_loans(user_id, 5)
 
+    def get_user_recent_loans(self, user_id):
+        user = self.user_repository.fetch_user_by_id(user_id)
+        if not user:
+            raise ValueError("user não encontrado")
+        
+        return self.user_repository.fetch_user_recent_loans(user_id, 5)
+
     def get_user_profile_data(self, user_id: int):
         try:
             user = self.user_repository.fetch_user_by_id(user_id)
@@ -122,7 +129,7 @@ class UserService:
             raise ValueError("senha atual incorreta")
         
         hashed_new_password = hash_password(new_password)
-        self.user_repository.update_user_password(user_id, hashed_new_password)
+        self.user_repository.update_password(user_id, hashed_new_password)
         return True
     
     def get_user_by_id(self, user_id):

@@ -15,7 +15,8 @@ class ProfileController:
     def show_profile(self):
         profile_data = self.user_service.get_user_profile_data(current_user.id)
         active_loans_list = self.user_service.get_user_active_loans(current_user.id)
-        
+        recent_loans_list = self.user_service.get_user_recent_loans(current_user.id)
+
         formatted_loans = []
         for loan_data in active_loans_list:
             formatted_loan = {
@@ -26,13 +27,23 @@ class ProfileController:
             }
             formatted_loans.append(formatted_loan)
         
+        formatted_recent_loans = []
+        for loan_data in recent_loans_list:
+            formatted_loan = {
+                'id': loan_data['id'],
+                'expected_return_date': loan_data['expected_return_date'],
+                'created_at': loan_data['created_at'],
+                'book': {'title': loan_data['book_title']}
+            }
+            formatted_recent_loans.append(formatted_loan)
+
         return render_template('user/profile.html', 
                                 user=profile_data['user'],                    
                                 active_loans=profile_data['active_loans'],   
                                 overdue_loans=profile_data['overdue_loans'], 
                                 total_loans=profile_data['total_loans'],    
                                 active_loans_list=formatted_loans,           
-                                recent_loans=[])                                                         
+                                recent_loans=formatted_recent_loans)                                                      
 
     @handle_controller_errors('user.profile')
     def update_profile(self):

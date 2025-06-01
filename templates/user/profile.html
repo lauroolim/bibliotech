@@ -108,23 +108,15 @@
                                     <tr>
                                         <th>Livro</th>
                                         <th>Data</th>
-                                        <th>Status</th>
+                                        <th>Devolução</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for loan in recent_loans %}
                                         <tr>
                                             <td>{{ loan.book.title }}</td>
-                                            <td>{{ loan.loan_date.strftime('%d/%m/%Y') }}</td>
-                                            <td>
-                                                {% if loan.status == 'ativo' %}
-                                                    <span class="badge bg-primary">Ativo</span>
-                                                {% elif loan.status == 'atrasado' %}
-                                                    <span class="badge bg-danger">Atrasado</span>
-                                                {% else %}
-                                                    <span class="badge bg-success">Devolvido</span>
-                                                {% endif %}
-                                            </td>
+                                            <td>{{ loan.created_at.strftime('%d/%m/%Y') }}</td>  <!-- ✅ CORRIGIDO: usar created_at -->
+                                            <td>{{ loan.expected_return_date.strftime('%d/%m/%Y') }}</td>  <!-- ✅ ADICIONADO: data de devolução -->
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -172,8 +164,8 @@
                                class="form-control" 
                                name="phone" 
                                value="{{ current_user.phone }}"
-                               pattern="[0-9]{10,11}">
-                        <small class="text-muted">Formato: DDD + Número (apenas números)</small>
+                               pattern="\(\d{2,3}\)\d{4,5}-\d{4}">
+                        <small class="text-muted">Formato: (DDD)XXXXX-XXXX ou (DDD)XXXX-XXXX</small>
                     </div>
                 </div>
                 <div class="modal-footer">
