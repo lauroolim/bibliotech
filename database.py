@@ -18,7 +18,7 @@ class Database:
     def get_connection(cls):
         conn = pyodbc.connect(current_app.config['DB_ODBC_STRING'])
         cursor = conn.cursor()
-        cursor.execute("SET search_path TO bibliotech, public")
+        cursor.execute("SET search_path TO bibliotech")
         cursor.close()
         return conn
  

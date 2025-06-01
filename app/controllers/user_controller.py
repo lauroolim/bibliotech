@@ -34,11 +34,15 @@ class UserController:
         return render_template('admin/list_users.html', **pagination)
 
     @handle_controller_errors('admin.list_users')
-    def delete_user(self, user_id):
+    def deactivate_user(self, user_id):
         self.user_service.deactivate_user(user_id)  
+        flash('Usuário desativado com sucesso', 'success') 
+        return redirect(url_for('admin.list_users'))
 
-        flash('Usuário deletado com sucesso', 'success') 
-
+    @handle_controller_errors('admin.list_users')
+    def activate_user(self, user_id):
+        self.user_service.activate_user(user_id)  
+        flash('Usuário reativado com sucesso', 'success') 
         return redirect(url_for('admin.list_users'))
 
     @handle_controller_errors('admin.list_users')
@@ -48,8 +52,10 @@ class UserController:
         if request.method == 'POST':
             username = request.form['username']
             email = request.form['email']
+            phone = request.form['phone'].strip()
+            password = request.form.get('password', '').strip() or None
 
-            self.user_service.update_user(user_id, username, email)
+            self.user_service.update_user(user_id=user_id, username=username, email=email, phone=phone, password=password)
             flash('Usuário atualizado com sucesso', 'success')
             return redirect(url_for('admin.list_users'))  
         return render_template('admin/edit_user.html', user=user)

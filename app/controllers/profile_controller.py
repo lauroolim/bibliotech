@@ -42,12 +42,7 @@ class ProfileController:
             email = request.form['email'].strip()
             phone = request.form['phone'].strip()
             
-            self.user_service.update_user_profile(
-                user_id=current_user.id,
-                username=username,
-                email=email,
-                phone=phone
-            )
+            self.user_service.update_user(user_id=current_user.id, username=username, email=email, phone=phone)
             flash('Perfil atualizado com sucesso!', 'success')
         
             return redirect(url_for('user.profile'))

@@ -1,10 +1,8 @@
 from datetime import date
 
 class Loan:
-    def __init__(self, id, created_at, expected_return_date, returned_at=None, 
-                 book_id=None, user_id=None, employee_id=None, status='ativo',
-                 book=None, user=None, employee=None):
-
+    def __init__(self, id, created_at, expected_return_date, returned_at=None, book_id=None, user_id=None, employee_id=None, status='ativo', book=None, user=None, employee=None):
+        
         self.id = id
         self.created_at = created_at
         self.expected_return_date = expected_return_date
