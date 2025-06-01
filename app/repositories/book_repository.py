@@ -52,6 +52,9 @@ class IBookRepository(ABC):
     @abstractmethod
     def delete_book(self, book_id: int) -> bool:
         pass 
+    @abstractmethod
+    def remove_all_book_authors(self, book_id: int) -> bool:
+        pass
 class PSQLBookRepository(IBookRepository):
     def __init__(self, db):
         self.db = db
@@ -282,4 +285,16 @@ class PSQLBookRepository(IBookRepository):
         except Exception as e:
             logger.error(f"Erro ao deletar livro {book_id}: {str(e)}")
             return False
-            
+    
+    def remove_all_book_authors(self, book_id):
+
+        query = "DELETE FROM books_authors WHERE book_id = ?"
+        params = [book_id]
+        
+        try:
+            self.db.execute_query(query, params)
+            logger.info(f"Todas as associações de autores removidas do livro {book_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao remover associações de autores do livro {book_id}: {str(e)}")
+            return False
