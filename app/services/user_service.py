@@ -23,8 +23,8 @@ class UserService:
         total_count = self.user_repository.count_users(search)  
         total_pages = (total_count + per_page - 1) // per_page
         
-        for user in users:
-            logger.info(f"DEBUG: User {user.id} - {user.username} - is_active: {user.is_active}")
+        #for user in users:
+            #logger.info(f"DEBUG: User {user.id} - {user.username} - is_active: {user.is_active}")
 
         return {
             'users': users,

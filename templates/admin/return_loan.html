@@ -54,17 +54,42 @@
 
                         {% if loan.days_overdue() > 0 %}
                         <div class="mb-3">
-                            <div class="alert alert-info">
-                                <h6>Cálculo de Multa</h6>
-                                <p>Dias de atraso: {{ loan.days_overdue() }}</p>
-                                <p>Valor por dia: R$ 2,00</p>
-                                <p><strong>Total da multa: R$ {{ "%.2f"|format(loan.days_overdue() * 2) }}</strong></p>
+                            <div class="alert alert-danger">
+                                <h6><i class="bi bi-currency-dollar"></i> Cálculo de Multa</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="mb-1">Dias de atraso: <strong>{{ loan.days_overdue() }}</strong></p>
+                                        <p class="mb-1">Valor por dia: <strong>R$ 2,00</strong></p>
+                                    </div>
+                                    <div class="col-6">
+                                        {% set fine_amount = (loan.days_overdue() * 2.00) %}
+                                        {% if fine_amount > 50.00 %}
+                                            {% set fine_amount = 50.00 %}
+                                            <p class="mb-1 text-warning">
+                                                <small>(Multa limitada ao máximo)</small>
+                                            </p>
+                                        {% endif %}
+                                        <p class="mb-1 fs-5">
+                                            <strong class="text-danger">Total: R$ {{ "%.2f"|format(fine_amount) }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="fine_paid" id="fine_paid">
+                                    <label class="form-check-label" for="fine_paid">
+                                        <strong>Multa paga no ato (R$ {{ "%.2f"|format(fine_amount) }})</strong>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="fine_paid" id="fine_paid">
-                                <label class="form-check-label" for="fine_paid">
-                                    Multa paga
-                                </label>
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <div class="alert alert-success">
+                                <h6><i class="bi bi-check-circle"></i> Devolução no Prazo</h6>
+                                <p class="mb-0">Sem multa aplicada</p>
+                                <p class="mb-0"><strong>Valor da multa: R$ 0,00</strong></p>
                             </div>
                         </div>
                         {% endif %}
@@ -75,6 +100,15 @@
                             </a>
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-circle"></i> Confirmar Devolução
+                                {% if loan.days_overdue() > 0 %}
+                                    {% set fine_amount = (loan.days_overdue() * 2.00) %}
+                                    {% if fine_amount > 50.00 %}
+                                        {% set fine_amount = 50.00 %}
+                                    {% endif %}
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        Multa: R$ {{ "%.2f"|format(fine_amount) }}
+                                    </span>
+                                {% endif %}
                             </button>
                         </div>
                     </form>
@@ -83,4 +117,25 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fineCheckbox = document.getElementById('fine_paid');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    if (fineCheckbox && submitButton) {
+        fineCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                submitButton.classList.remove('btn-success');
+                submitButton.classList.add('btn-warning');
+                submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Confirmar Devolução + Pagamento';
+            } else {
+                submitButton.classList.remove('btn-warning');
+                submitButton.classList.add('btn-success');
+                submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Confirmar Devolução';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

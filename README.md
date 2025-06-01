@@ -138,13 +138,13 @@ bibliotech-py/
 └── run.py                # Arquivo de entrada da aplicação
 ```
 
-## Funcionalidades
+## Funcionalidades Principais
 
 - **Dashboard Administrativo**: Visão geral das estatísticas da biblioteca
 - **Gestão administrativa de Usuários**: Cadastro e gerenciamento de usuários da biblioteca
 - **Gestão administrativa de Livros**: Cadastro e Catalogação de livros com autores e status de disponibilidade
 - **Gestão administrativa de Autores**: Cadastro e gerenciamento de autores
-- **Gestão admnistrativa de Empréstimos**: Registro e controle de empréstimos de livros e devoluções
+- **Gestão admnistrativa de Empréstimos**: Registro e controle de empréstimos de livros, devoluções e multas
 - **Autenticação**: Login e logout de usuários e administração separados 
 - **Perfil de usuário**: Visualização e edição de perfil
 - **Gerenciamento dos própios empréstimos**: Visualização de painel de empréstimos no perfil do usuário, com histórico de empréstimos e status atual
